@@ -1,0 +1,95 @@
+body {
+
+    width: 100%;
+    height: 100%;
+}
+
+#content {
+
+    width: 100%;
+    height: 100%;    
+    position: absolute;
+    padding: 20px;
+}
+
+#map {
+
+    float: left;
+    width: 35%; 
+    height: 100%;
+    position: relative;
+}
+
+#map-header {
+
+    width: 100%;
+    height: 34px;
+    margin-bottom: 1px;
+}
+
+#map-content {
+
+    width: 100%;
+    height: calc(100% - 35px);
+    height: -moz-calc(100% - 35px);
+    height: -webkit-calc(100% - 35px);
+}
+
+#map-footer {
+
+    width: 100%;
+    height: 0px;
+}
+
+#info {
+
+    float: left;
+    width: 65%; 
+    height: 100%;
+    padding-left: 10px;
+}
+
+.district-image {
+
+    width: 60px;
+    height: 60px;
+    float: left;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #999;
+}
+
+#map-inner-shadow {
+    width: 100%;
+    height: 100%;
+    -moz-box-shadow:    inset 0 0 10px #000000;
+    -webkit-box-shadow: inset 0 0 10px #000000;
+    box-shadow:         inset 0 0 10px #000000;
+    z-index: 1000;
+    position: absolute;
+    pointer-events: none;
+}
+
+
+
+#home {
+
+    padding: 5px;
+}
+
+/* ########################################################################################## */
+/* LeafletJs Stuff */
+/* ########################################################################################## */
+
+
+
+.leaflet-popup-content-wrapper {
+    
+    border-radius: 0px;
+}
+
+.leaflet-popup-content {
+
+    border: none;
+}

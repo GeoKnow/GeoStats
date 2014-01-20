@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Quick Start Guide Example</title>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" >
+    <!-- Include the plugin's CSS and JS: -->
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-3.0.3.min.css" type="text/css"/>
+</head>
+<body>
+    <div id="content">
+        <div id="map">
+            <div id="map-header">
+                <select id="layer-chooser" class="multiselect">
+                    <option value="federalState">Federal state</option>
+                    <option value="adminstrativeDistricts">Administrative District</option>
+                    <option value="districts" selected>District</option>
+                </select>
+            </div>
+            <div id="map-content">
+                <div id="map-inner-shadow"></div>                
+            </div>
+            <div id="map-footer"></div>
+        </div>
+        <div id="info">
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
+              <li><a href="#info" data-toggle="tab">Info</a></li>
+              <li><a href="#statistics" data-toggle="tab">Statistics</a></li>
+              <li><a href="#geometry-info" data-toggle="tab">Results</a></li>
+            </ul>
+
+            <!-- tab panes -->
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="home">
+                    <div class="page-header">
+                        <h1>GeoStats<small> Visualizing interlinked RDF data cubes on maps</small></h1>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="info">
+                  
+                </div>
+                <div class="tab-pane fade" id="statistics">
+                  Select a statistic
+                </div>
+                <div class="tab-pane fade" id="geometry-info">
+                    See the results
+                </div>
+            </div>
+        </div>    
+    </div>
+    
+
+    <script src="lib/leaflet/leaflet.js"></script>
+    <script src="lib/jquery/jquery-1.10.2.min.js"></script>
+    <script src="lib/underscore/underscore-min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script>
+
+    $(document).ready(function() {
+
+        var entities = '';
+        var map = L.map('map-content', {
+            center: [51.399206, 10.349121],
+            zoom: 6,
+            maxZoom: 6,
+            minZoom: 6,
+            dragging : true,
+            zoomControl : false
+        });
+
+        var sourcePoints = L.featureGroup().addTo(map);
+
+        L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/96931/256/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="http://openstreetmap.org">OSM</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+        }).addTo(map);
+
+        $('#layer-chooser').multiselect({
+            onChange: function(element, checked) {
+                
+                sourcePoints.clearLayers();
+                // [$('#layer-chooser').val()]
+                console.log(entities);
+                _.each(entities[$('#layer-chooser').val()], function (district) {
+
+                    var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: getRandomColor(), fillOpacity: 1.0});
+                    polygon.addTo(sourcePoints).bindPopup(getPopupHtml(district.uri, district));    
+                });
+            }
+        });
+
+        $.getJSON('data/geometries.json', function(data){
+
+            entities = data;
+
+            _.each(_.values(data.districts), function (district) {
+
+                var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten))), fillOpacity: 1.0});
+                polygon.addTo(sourcePoints).bindPopup(getPopupHtml(district.uri, district));    
+            });
+        });       
+    });
+
+    function getColorLuminance(hex, lum) {
+
+        // validate hex string
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        }
+        lum = lum || 0;
+
+        // convert to decimal and change luminosity
+        var rgb = "#", c, i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i*2,2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ("00"+c).substr(c.length);
+        }
+
+        return rgb;
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.round(Math.random() * 15)];
+        }
+        return color;
+    }
+
+    function getPopupHtml(uri, area) {
+
+        var html =
+            "<div>" +
+                "<h1><a href='"+uri+"'>" + area.label + "</a></h1>" +
+                "<div>" +
+                    "<img class='district-image' src='" +area.img + "'/>" +
+                    area.comment +
+                "</div>" +    
+            "</div>";
+
+        return html;
+    }
+
+    </script>
+</body>
+</html>
