@@ -25,7 +25,7 @@ public class DistrictShpFileLoader extends DefaultShapeFileLoader {
 		super.featureAttribute = "ID_3";
 		super.featureClass = "TYPE_3";
 		super.featureName = "NAME_3";
-		super.path = "/Users/gerb/Development/workspaces/data/geostats/geometries/germany/DEU_adm/";
+		super.path = "data/";
 		super.fileName = "DEU_adm3";
 		super.model = model;
 		super.areaType = "district";
@@ -33,7 +33,8 @@ public class DistrictShpFileLoader extends DefaultShapeFileLoader {
 	}
 
 	public void generateRDF() throws IOException, InterruptedException {
-
+		
+		System.out.println(UtilsLib.getGMTime() + " Starting District Generation!");
 		FeatureIterator iterator = this.featureCollection.features();
 		int position = 0;
 		long t_start = System.currentTimeMillis();
@@ -85,6 +86,8 @@ public class DistrictShpFileLoader extends DefaultShapeFileLoader {
 				MultiPolygon multiPolygon = (MultiPolygon) geometry;
 				for (int i = 0; i < multiPolygon.getNumGeometries(); ++i)
 					RdfExport.insertPolygon(model, uri, multiPolygon.getGeometryN(i));
+				
+				System.out.println("I: " + position);
 
 				++position;
 			}

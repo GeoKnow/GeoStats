@@ -16,6 +16,7 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
+import org.opengis.feature.Property;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -62,6 +63,11 @@ public abstract class DefaultShapeFileLoader implements ShpFileLoader {
 	    		DataStore dataStore = DataStoreFinder.getDataStore(map);
 	  	      	FeatureSource featureSource = dataStore.getFeatureSource(this.fileName);
 	  	      	this.featureCollection = featureSource.getFeatures();
+	  	      	
+//	  	      	for ( Property i : ((SimpleFeatureImpl) featureCollection.features().next()).getProperties()) {
+//	  	      		
+//	  	      		System.out.println(i);
+//	  	      	}
 	    	}
 	    	catch ( Exception e) { e.printStackTrace(); }
 	    }

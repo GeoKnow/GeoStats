@@ -24,7 +24,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.aksw.json.JsonDataGenerator;
+import org.json.JSONException;
+
 import com.hp.hpl.jena.rdf.model.Model;
+import com.vividsolutions.jts.io.ParseException;
 
 import eu.geoknow.athenarc.triplegeo.shape.ShpFileLoader;
 
@@ -35,21 +39,26 @@ import eu.geoknow.athenarc.triplegeo.shape.ShpFileLoader;
  * @author Kostas Patroumpas Last modified by: Kostas Patroumpas, 12/6/2013
  */
 public class ShpToRdf {
+	
+	public static final String GEOSTATS_NS = "http://geostats.aksw.org/";
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException, JSONException, ParseException {
 		
 		Model model = RdfExport.getModelFromConfiguration("http://geostats.aksw.org/");
 		
-		List<ShpFileLoader> fileLoader = new ArrayList<>();
-		fileLoader.add(new DistrictShpFileLoader(model));
-		fileLoader.add(new AdministrativeDistrictShpFileLoader(model));
-		fileLoader.add(new FederalStateShpFileLoader(model));
+		System.out.println("Generating Backend Data!");
+		ExtraWurstExtractor.extract(model);
+		new NutsLoader(model).generateRDF();
+		NutsDBpediaLinker nutsDBpediaLinker = new NutsDBpediaLinker(model);
+		nutsDBpediaLinker.linkDistricts();
+		nutsDBpediaLinker.linkAdministrativeDistricts();
+		nutsDBpediaLinker.linkFederalStates();
 		
-		for ( ShpFileLoader loader : fileLoader) {
-			
-			loader.generateRDF();
-		}
+		RegionalStatistikLinker.generateLinks(model);
 		
-		RdfExport.write(model, "/Users/gerb/Development/workspaces/data/geostats/rdf/geostats.ttl");
+		RdfExport.write(model, "data/geostats.ttl");
+		
+		System.out.println("Generating View Data!");
+		JsonDataGenerator.generate();
 	}
 }

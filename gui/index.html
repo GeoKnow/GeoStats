@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Quick Start Guide Example</title>
+    <title>GeoStats</title>
     <meta charset="utf-8" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +19,7 @@
             <div id="map-header">
                 <select id="layer-chooser" class="multiselect">
                     <option value="federalState">Federal state</option>
-                    <option value="adminstrativeDistricts">Administrative District</option>
+                    <option value="adminstrativeDistricts" >Administrative District</option>
                     <option value="districts" selected>District</option>
                 </select>
             </div>
@@ -28,12 +28,12 @@
             </div>
             <div id="map-footer"></div>
         </div>
-        <div id="info">
+        <div id="data">
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs">
               <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
-              <li><a href="#info" data-toggle="tab">Info</a></li>
+              <li><a href="#info" data-toggle="tab" id="nav-button-info">Info</a></li>
               <li><a href="#statistics" data-toggle="tab">Statistics</a></li>
               <li><a href="#geometry-info" data-toggle="tab">Results</a></li>
             </ul>
@@ -43,6 +43,12 @@
                 <div class="tab-pane fade in active" id="home">
                     <div class="page-header">
                         <h1>GeoStats<small> Visualizing interlinked RDF data cubes on maps</small></h1>
+                        <ul>
+                            <li>http://epp.eurostat.ec.europa.eu/portal/page/portal/nuts_nomenclature/introduction</li>
+                            <li>http://ec.europa.eu/eurostat/ramon/nomenclatures/index.cfm?TargetUrl=LST_NOM_DTL&StrNom=NUTS_22&StrLanguageCode=EN&IntPcKey=30634779&StrLayoutCode=HIERARCHIC</li>
+                            <li>https://www.regionalstatistik.de/genesis/online;jsessionid=1012C26EDAD38DE26DB574B8EEF257E1?Menu=Willkommen</li>
+                            <li>http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2013:342:0001:0057:DE:PDF</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="info">
@@ -72,10 +78,10 @@
         var map = L.map('map-content', {
             center: [51.399206, 10.349121],
             zoom: 6,
-            maxZoom: 6,
-            minZoom: 6,
+            maxZoom: 18,
+            minZoom: 1,
             dragging : true,
-            zoomControl : false
+            zoomControl : true
         });
 
         var sourcePoints = L.featureGroup().addTo(map);
@@ -89,12 +95,16 @@
             onChange: function(element, checked) {
                 
                 sourcePoints.clearLayers();
-                // [$('#layer-chooser').val()]
-                console.log(entities);
+                
                 _.each(entities[$('#layer-chooser').val()], function (district) {
 
-                    var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: getRandomColor(), fillOpacity: 1.0});
-                    polygon.addTo(sourcePoints).bindPopup(getPopupHtml(district.uri, district));    
+                    var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
+                        getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
+
+                    var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
+                    polygon.addTo(sourcePoints)
+                    polygon.district = district;
+                    polygon.on('click', displayPolygonInfo);
                 });
             }
         });
@@ -103,12 +113,28 @@
 
             entities = data;
 
-            _.each(_.values(data.districts), function (district) {
+            console.log(entities);
 
-                var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten))), fillOpacity: 1.0});
-                polygon.addTo(sourcePoints).bindPopup(getPopupHtml(district.uri, district));    
+            // get selection from layer selector and display the correct layer
+            _.each(_.values(entities[$('#layer-chooser').val()]), function (district) {
+
+                var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
+                    getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
+
+                    color = "black";
+
+                var polygon = L.multiPolygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
+                polygon.addTo(sourcePoints);
+                polygon.district = district;
+                polygon.on('click', displayPolygonInfo);
             });
-        });       
+        });
+
+        function displayPolygonInfo() {
+
+            $('#info').html(getPopupHtml(this.district));
+            $('#nav-button-info').click();
+        }
     });
 
     function getColorLuminance(hex, lum) {
@@ -140,14 +166,19 @@
         return color;
     }
 
-    function getPopupHtml(uri, area) {
+    function getPopupHtml(area) {
 
         var html =
             "<div>" +
-                "<h1><a href='"+uri+"'>" + area.label + "</a></h1>" +
+                "<h1><a href='"+area.uri+"'>" + area.label + "</a></h1>" +
                 "<div>" +
                     "<img class='district-image' src='" +area.img + "'/>" +
-                    area.comment +
+                    "<p>" + area.comment + "</p>" +
+                    "<div style='clear: both;'/>" +
+                    "<dl>" + 
+                        "<dt>Homepage</dt>" +
+                        "<dd><a href='" + area.url + "'>"+area.url+"</a></dd>"+
+                    "</dl>" +
                 "</div>" +    
             "</div>";
 

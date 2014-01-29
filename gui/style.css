@@ -41,7 +41,7 @@ body {
     height: 0px;
 }
 
-#info {
+#data {
 
     float: left;
     width: 65%; 
@@ -51,8 +51,8 @@ body {
 
 .district-image {
 
-    width: 60px;
-    height: 60px;
+    width: 100px;
+    /*height: 60px;*/
     float: left;
     margin-right: 5px;
     margin-bottom: 5px;

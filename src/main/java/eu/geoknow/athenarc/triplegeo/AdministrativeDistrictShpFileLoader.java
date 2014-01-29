@@ -23,7 +23,7 @@ public class AdministrativeDistrictShpFileLoader extends DefaultShapeFileLoader 
 		super.featureAttribute = "ID_2";
 		super.featureClass = "TYPE_2";
 		super.featureName = "NAME_2";
-		super.path = "/Users/gerb/Development/workspaces/data/geostats/geometries/germany/DEU_adm/";
+		super.path = "data/";
 		super.fileName = "DEU_adm2";
 		super.areaType = "adminDistrict";
 		super.model = model;
@@ -32,6 +32,8 @@ public class AdministrativeDistrictShpFileLoader extends DefaultShapeFileLoader 
 
 	@Override
 	public void generateRDF() throws IOException, InterruptedException {
+		
+		System.out.println(UtilsLib.getGMTime() + " Starting Adminsitrative District Generation!");
 		
 		FeatureIterator iterator = this.featureCollection.features();
 		int position = 0;
@@ -68,7 +70,7 @@ public class AdministrativeDistrictShpFileLoader extends DefaultShapeFileLoader 
 				}
 
 				// Type according to application schema
-				RdfExport.insertResourceTypeResource(model, uri, "http://dbpedia.org/ontology/AdminstrativeDistrict");
+				RdfExport.insertResourceTypeResource(model, uri, "http://dbpedia.org/ontology/AdministrativeDistrict");
 
 				// Type according to GeoSPARQL feature
 				RdfExport.insertResourceTypeResource(model, uri, "http://www.opengis.net/ont/geosparql#" + Constants.FEATURE);

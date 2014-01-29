@@ -50,6 +50,9 @@ public class RdfExport {
 		tmpModel.setNsPrefix("de-dbr", "http://de.dbpedia.org/resource/");
 		tmpModel.setNsPrefix("gadm", "http://linkedgeodata.org/ld/gadm2/ontology/");
 		tmpModel.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+		tmpModel.setNsPrefix("ramon", "http://rdfdata.eionet.europa.eu/ramon/ontology/");
+		tmpModel.setNsPrefix("nuts", "http://nuts.geovocab.org/id/");
+		
 		return tmpModel;
 	}
 	

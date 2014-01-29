@@ -21,7 +21,7 @@ public class FederalStateShpFileLoader extends DefaultShapeFileLoader {
 		super.featureAttribute = "ID_1";
 		super.featureClass = "TYPE_1";
 		super.featureName = "NAME_1";
-		super.path = "/Users/gerb/Development/workspaces/data/geostats/geometries/germany/DEU_adm/";
+		super.path = "data/";
 		super.fileName = "DEU_adm1";
 		super.model = model;
 		super.areaType = "state";
@@ -30,6 +30,8 @@ public class FederalStateShpFileLoader extends DefaultShapeFileLoader {
 
 	@Override
 	public void generateRDF() throws IOException, InterruptedException {
+		
+		System.out.println(UtilsLib.getGMTime() + " Starting Federal State Generation!");
 		
 		FeatureIterator iterator = this.featureCollection.features();
 		int position = 0;

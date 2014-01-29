@@ -48,6 +48,7 @@ public class UriResolver {
 		oldToNew.put("Regierungsbezirk Luneburg", 			"Regierungsbezirk Lüneburg");
 		oldToNew.put("Regierungsbezirk Munster", 			"Regierungsbezirk Münster");
 		oldToNew.put("Regierungsbezirk Berlin", 			"Berlin");
+		oldToNew.put("Regierungsbezirk Magdeburg", 			"Bezirk Magdeburg");
 		
 		oldToNew.put("Landkreis Bitburg-Prüm", 				"Eifelkreis Bitburg-Prüm");
 		oldToNew.put("Landkreis Landsberg", 				"Landkreis Landsberg am Lech");
@@ -89,6 +90,8 @@ public class UriResolver {
 		oldToNew.put("Landkreis Höxter", 					"Kreis Höxter");
 		oldToNew.put("Luneburg", 							"Lüneburg");
 		oldToNew.put("Cologne", 							"Köln");
+		oldToNew.put("Burgenland (D)", 						"Burgenlandkreis");
+		oldToNew.put("Friesland (D)", 						"Landkreis Friesland");
 		oldToNew.put("Ludwigshafen", 						"Ludwigshafen am Rhein");
 		oldToNew.put("Mülheim", 							"Mülheim an der Ruhr");
 		oldToNew.put("Münster", 							"Münster (Westfalen)");
@@ -114,6 +117,7 @@ public class UriResolver {
 		oldToNew.put("Frankfurt am Oder", 					"Frankfurt (Oder)");
 		oldToNew.put("Landkreis Ennepe-Ruhr", 				"Ennepe-Ruhr-Kreis");
 		oldToNew.put("Olpe", 								"Kreis Olpe");
+		oldToNew.put("Salzland", 							"Salzlandkreis");
 		oldToNew.put("Siegen-Wittgenstein", 				"Kreis Siegen-Wittgenstein");
 		oldToNew.put("Landkreis Alb-Donau", 				"Alb-Donau-Kreis");
 		oldToNew.put("Landkreis Bodensee", 					"Bodenseekreis");
@@ -159,6 +163,24 @@ public class UriResolver {
 		return INSTANCE;
 	}
 	
+	public String resolveRedirect(String dbpediaUri) {
+		
+		String query = String.format("SELECT ?redirect FROM <http://de.dbpedia.org> { <%s> <http://dbpedia.org/ontology/wikiPageRedirects> ?redirect }", dbpediaUri);
+        ResultSet rs = deQef.createQueryExecution(query).execSelect();
+        
+        while (rs.hasNext()) {
+        	
+        	QuerySolution result = rs.next();
+        	String uri = result.getResource("redirect").getURI();
+        	
+//        	System.out.println(dbpediaUri + " " + uri);
+        	
+        	return uri;
+        }
+        
+        return dbpediaUri;
+	}
+	
 	public String getUri(String label, String backupLabel) {
 		
         String query = String.format("SELECT ?s FROM <http://de.dbpedia.org> { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"\"\"%s\"\"\"@de }", repairLabel(label));
@@ -190,7 +212,7 @@ public class UriResolver {
             }
         }
         
-        System.out.println("no URI found for label: " + label);
+//        System.out.println("no URI found for label: " + label);
         return "";
 	}
 	
@@ -233,19 +255,21 @@ public class UriResolver {
 				Resource stateUri = ResourceFactory.createResource(uri);
 				
 				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/PopulatedPlace"));
-				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/AdministrativeRegion"));
+				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/FederalState"));
 				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Place"));
 				
 				String query = 
 						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
 						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
 						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
 						"CONSTRUCT { \n" +
 							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
 							"\t<" + uri + "> rdfs:comment ?comment . \n" +
 							"\t<" + uri + "> rdfs:label ?label . \n" +
 							"\t<" + uri + "> owl:sameAs ?sameAs . \n" +
 							"\t<" + uri + "> dbo:populationTotal ?population . \n" + 
+							"\t<" + uri + "> foaf:homepage ?homepage . \n" + 
 						"} \n" +
 						"WHERE { \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
@@ -253,6 +277,7 @@ public class UriResolver {
 							"\tOPTIONAL { <" + uri + "> rdfs:label ?label } \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
 							"\tOPTIONAL { <" + uri + "> owl:sameAs ?sameAs . FILTER (regex(?sameAs, '^http://dbpedia.org/resource/', 'i')) } \n" +
+							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
 						"}";
 				
 				model.add(deQef.createQueryExecution(query).execConstruct());
@@ -266,11 +291,13 @@ public class UriResolver {
 				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/PopulatedPlace"));
 				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Settlement"));
 				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Place"));
+				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/AdministrativeDistrict"));
 				
 				String query = 
 						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
 						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
 						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
 						"CONSTRUCT { \n" +
 							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
 							"\t<" + uri + "> rdfs:comment ?comment . \n" +
@@ -290,6 +317,7 @@ public class UriResolver {
 							"\t<" + uri + "> dbo:postalCode ?postalCode . \n" + 
 							"\t<" + uri + "> dbo:vehicleCode ?vehicleCode . \n" + 
 							"\t<" + uri + "> dbo:populationTotal ?population . \n" +
+							"\t<" + uri + "> foaf:homepage ?homepage . \n" +
 						"} \n" +
 						"WHERE { \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
@@ -310,6 +338,7 @@ public class UriResolver {
 							"\tOPTIONAL { <" + uri + "> dbo:postalCode ?postalCode } \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:vehicleCode ?vehicleCode } \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
+							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
 						"}";
 				
 				model.add(deQef.createQueryExecution(query).execConstruct());
@@ -328,6 +357,7 @@ public class UriResolver {
 						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
 						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
 						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
 						"CONSTRUCT { \n" +
 							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
 							"\t<" + uri + "> rdfs:comment ?comment . \n" +
@@ -347,6 +377,7 @@ public class UriResolver {
 							"\t<" + uri + "> dbo:postalCode ?postalCode . \n" + 
 							"\t<" + uri + "> dbo:vehicleCode ?vehicleCode . \n" + 
 							"\t<" + uri + "> dbo:populationTotal ?population . \n" +
+							"\t<" + uri + "> foaf:homepage ?homepage . \n" +
 						"} \n" +
 						"WHERE { \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
@@ -367,6 +398,7 @@ public class UriResolver {
 							"\tOPTIONAL { <" + uri + "> dbo:postalCode ?postalCode } \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:vehicleCode ?vehicleCode } \n" +
 							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
+							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
 						"}";
 				
 				model.add(deQef.createQueryExecution(query).execConstruct());
