@@ -34,6 +34,12 @@ import org.antlr.runtime.RecognitionException;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.google.common.io.InputSupplier;
+import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Statement;
+
+import eu.geoknow.athenarc.triplegeo.RdfExport;
 
 /**
  * @author Daniel Gerber <daniel.gerber@icloud.com>
@@ -70,7 +76,11 @@ public class SparqlifyRegionalStatistik {
 		ViewTemplateDefinition view = CsvMapperCliMain.pickView(viewIndex, null);
 
 		TripleIteratorTracking it = CsvMapperCliMain.createTripleIterator(rs, view);
-		SparqlFormatterUtils.writeText(System.out, it);
+		Model model = ModelFactory.createDefaultModel();
+		while (it.hasNext() ) { model.add(model.asStatement(it.next())); }
+		
+		RdfExport.write(model, "data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.ttl");
+//		SparqlFormatterUtils.writeText(System.out, it);
 	}
 
 	static class InputSupplierResourceStream implements InputSupplier<InputStream> {

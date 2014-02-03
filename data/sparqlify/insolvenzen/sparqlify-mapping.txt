@@ -129,14 +129,21 @@ Create View Template Insolvenzen
       a qb:Observation ;
       qb:dataSet gs-qb:GeoStatsInsolvenzen ;
       gs-qb:refArea ?areaUri ;
-      gs-qb:refPeriod ?1 ;
-      gs-qb:beantragteInsolvenzverfahren ?3 ;
-      gs-qb:eroeffnetInsolvenzverfahren ?4 ;
-      gs-qb:mangelsMasseAbgewieseneInsolvenzverfahren ?5 ;
-      gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahren ?6 ;
-      gs-qb:beschaeftigte ?7 ;
-      gs-qb:vorraussichtlicheForderungen ?8 . 
+      gs-qb:refPeriod ?refPeriod ;
+      gs-qb:beantragteInsolvenzverfahren ?beantragt ;
+      gs-qb:eroeffnetInsolvenzverfahren ?eroeffnet ;
+      gs-qb:mangelsMasseAbgewieseneInsolvenzverfahren ?masse ;
+      gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahren ?plan ;
+      gs-qb:beschaeftigte ?beschaeftigte ;
+      gs-qb:vorraussichtlicheForderungen ?forderungen . 
   }
   With
       ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/", ?1, "_", ?2))
       ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?2))
+      ?refPeriod = plainLiteral(?1, xsd:gYear)
+      ?beantragt = plainLiteral(?4)
+      ?eroeffnet = plainLiteral(?5)
+      ?masse = plainLiteral(?6)
+      ?plan = plainLiteral(?7)
+      ?beschaeftigte = plainLiteral(?8)
+      ?forderungen = plainLiteral(?9)
