@@ -242,8 +242,9 @@ public class JsonDataGenerator {
         	// get string values
         	String uri			 = result.get("dbpedia").asResource().getURI();
         	if ( done.contains(uri) ) continue;
-        	if ( !uri.contains("Nordwestmecklenburg"))continue;
+//        	if ( !uri.contains("Nordwestmecklenburg"))continue;
         	done.add(uri);
+        	
         	String label		 = getLabel(uri);
         	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
@@ -253,6 +254,8 @@ public class JsonDataGenerator {
         	
         	JSONArray multipolygon = new JSONArray();
         	for ( Geometry geo : geos ) {
+        		
+        		geo = TopologyPreservingSimplifier.simplify(geo, 0.01);
         		
         		JSONArray points = new JSONArray();
         		for ( Coordinate p : geo.getCoordinates()) {
@@ -264,8 +267,6 @@ public class JsonDataGenerator {
             	}
         		multipolygon.put(points);
         	}
-        	
-        	System.out.println(multipolygon.toString());
         	
         	// some uris appear more then once (if they consist of multipolygons)
         	JSONObject area = new JSONObject();

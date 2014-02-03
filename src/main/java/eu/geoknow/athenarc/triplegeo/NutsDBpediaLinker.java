@@ -122,6 +122,8 @@ public class NutsDBpediaLinker {
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEF0F") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Stormarn";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE94G") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Wesermarsch";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE40F") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Prignitz";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE405") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Barnim";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE40I") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Uckermark";
 			
 //			System.out.println(nutsDistrictUri + " > " + dbpediaUri);
 			

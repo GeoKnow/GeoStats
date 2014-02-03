@@ -48,6 +48,7 @@
                             <li>http://ec.europa.eu/eurostat/ramon/nomenclatures/index.cfm?TargetUrl=LST_NOM_DTL&StrNom=NUTS_22&StrLanguageCode=EN&IntPcKey=30634779&StrLayoutCode=HIERARCHIC</li>
                             <li>https://www.regionalstatistik.de/genesis/online;jsessionid=1012C26EDAD38DE26DB574B8EEF257E1?Menu=Willkommen</li>
                             <li>http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2013:342:0001:0057:DE:PDF</li>
+                            <li>http://www.w3.org/TR/2014/REC-vocab-data-cube-20140116/</li>
                         </ul>
                     </div>
                 </div>
@@ -121,7 +122,7 @@
                 var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
                     getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
 
-                    color = "black";
+                    // color = "black";
 
                 var polygon = L.multiPolygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
                 polygon.addTo(sourcePoints);
