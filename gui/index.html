@@ -16,13 +16,6 @@
 <body>
     <div id="content">
         <div id="map">
-            <div id="map-header">
-                <select id="layer-chooser" class="multiselect">
-                    <option value="federalState">Federal state</option>
-                    <option value="adminstrativeDistricts" >Administrative District</option>
-                    <option value="districts" selected>District</option>
-                </select>
-            </div>
             <div id="map-content">
                 <div id="map-inner-shadow"></div>                
             </div>
@@ -32,15 +25,15 @@
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs">
-              <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
-              <li><a href="#info" data-toggle="tab" id="nav-button-info">Info</a></li>
-              <li><a href="#statistics" data-toggle="tab">Statistics</a></li>
-              <li><a href="#geometry-info" data-toggle="tab">Results</a></li>
+              <li><a href="#home" data-toggle="tab">Home</a></li>
+              <li><a href="#info" data-toggle="tab" id="nav-button-info">Infos</a></li>
+              <li class="active"><a href="#statistics" data-toggle="tab">Statistiken</a></li>
+              <li><a href="#geometry-info" data-toggle="tab">Ergebnisse</a></li>
             </ul>
 
             <!-- tab panes -->
             <div class="tab-content">
-                <div class="tab-pane fade in active" id="home">
+                <div class="tab-pane fade" id="home">
                     <div class="page-header">
                         <h1>GeoStats<small> Visualizing interlinked RDF data cubes on maps</small></h1>
                         <ul>
@@ -55,8 +48,50 @@
                 <div class="tab-pane fade" id="info">
                   
                 </div>
-                <div class="tab-pane fade" id="statistics">
-                  Select a statistic
+                <div class="tab-pane fade in active" id="statistics">
+                    <div id="stats-container">
+                        <div style="margin-bottom: 20px;">
+                            <h4>Administrative Ebene wählen:</h4>
+                            <div id="layer-chooser" class="btn-group">
+                              <button type="button" class="btn btn-default" id="federalStates">Bundesländer</button>
+                              <button type="button" class="btn btn-default" id="adminstrativeDistricts">Regierungsbezirke</button>
+                              <button type="button" class="btn btn-default" id="districts">Kreise und kreisfreie Städte</button>
+                            </div>
+                        </div>
+                        <div stlye="clear:both;"></div>
+                        <div class="statistic">
+                            <h4>Primäre Statistik auswählen:</h4>
+                            <select id="primary-statistic" class="multiselect">
+                                <option value="federalState" selected>Insolvenzen</option>
+                                <option value="adminstrativeDistricts">Geburten</option>
+                                <option value="districts" >Tode</option>
+                            </select>
+                            <h4 style="padding-top: 10px;">Maß für Primäre Statistik auswählen:</h4>
+                            <select id="primary-statistic-measure" class="multiselect">
+                                <option value="federalState" selected>Insolvenzen</option>
+                                <option value="adminstrativeDistricts">Geburten</option>
+                                <option value="districts">Tode</option>
+                            </select>
+                        </div>
+                        <div class="statistic">
+                            <h4>Sekundäre Statistik auswählen:</h4>
+                            <select id="secondary-statistic" class="multiselect">
+                                <option value="federalState" selected>optional</option>
+                                <option value="federalState">Insolvenzen</option>
+                                <option value="adminstrativeDistricts">Geburten</option>
+                                <option value="districts" >Tode</option>
+                            </select>
+                            <h4 style="padding-top: 10px;">Maß für Sekundäre Statistik auswählen:</h4>
+                            <select id="secondary-statistic-measure" class="multiselect">
+                                <option value="federalState" selected>optional</option>
+                                <option value="federalState">Insolvenzen</option>
+                                <option value="adminstrativeDistricts">Geburten</option>
+                                <option value="districts" >Tode</option>
+                            </select>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <button style="margin-top: 25px;" type="button" class="btn btn-success">Visualisierung</button>
+                    </div>                    
                 </div>
                 <div class="tab-pane fade" id="geometry-info">
                     See the results
@@ -92,37 +127,38 @@
             attribution: '&copy; <a href="http://openstreetmap.org">OSM</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
         }).addTo(map);
 
-        $('#layer-chooser').multiselect({
-            onChange: function(element, checked) {
-                
-                sourcePoints.clearLayers();
-                
-                _.each(entities[$('#layer-chooser').val()], function (district) {
+        $('#primary-statistic').multiselect();
+        $('#primary-statistic-measure').multiselect();
+        $('#secondary-statistic').multiselect();
+        $('#secondary-statistic-measure').multiselect();
 
-                    var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
-                        getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
+        $("#layer-chooser > button.btn").on("click", function(){
 
-                    var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
-                    polygon.addTo(sourcePoints)
-                    polygon.district = district;
-                    polygon.on('click', displayPolygonInfo);
-                });
-            }
+            var layer = $(this).attr("id");
+            sourcePoints.clearLayers();
+                
+            _.each(entities[layer], function (district) {
+
+                var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
+                    getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
+
+                var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
+                polygon.addTo(sourcePoints)
+                polygon.district = district;
+                polygon.on('click', displayPolygonInfo);
+            });
+
         });
 
         $.getJSON('data/geometries.json', function(data){
 
             entities = data;
 
-            console.log(entities);
-
             // get selection from layer selector and display the correct layer
-            _.each(_.values(entities[$('#layer-chooser').val()]), function (district) {
+            _.each(_.values(entities['federalStates']), function (district) {
 
                 var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
                     getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
-
-                    // color = "black";
 
                 var polygon = L.multiPolygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
                 polygon.addTo(sourcePoints);
@@ -176,10 +212,9 @@
                     "<img class='district-image' src='" +area.img + "'/>" +
                     "<p>" + area.comment + "</p>" +
                     "<div style='clear: both;'/>" +
-                    "<dl>" + 
-                        "<dt>Homepage</dt>" +
-                        "<dd><a href='" + area.url + "'>"+area.url+"</a></dd>"+
-                    "</dl>" +
+                    "<table class='table table-striped'>"+
+                        "<tr><td>Homepage</td><td><a href='" + area.url + "'>"+area.url+"</a></td></tr>" +
+                    "</table>" + 
                 "</div>" +    
             "</div>";
 

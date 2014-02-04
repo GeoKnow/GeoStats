@@ -76,7 +76,7 @@ public class SparqlifyRegionalStatistik {
 		ViewTemplateDefinition view = CsvMapperCliMain.pickView(viewIndex, null);
 
 		TripleIteratorTracking it = CsvMapperCliMain.createTripleIterator(rs, view);
-		Model model = ModelFactory.createDefaultModel();
+		Model model = RdfExport.getModelFromConfiguration("");
 		while (it.hasNext() ) { model.add(model.asStatement(it.next())); }
 		
 		RdfExport.write(model, "data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.ttl");
@@ -106,7 +106,7 @@ public class SparqlifyRegionalStatistik {
 		@Override
 		public Reader getInput() throws IOException {
 			InputStream in = resource.getInputStream();
-			Reader result = new InputStreamReader(in);
+			Reader result = new InputStreamReader(in, "Windows-1252");
 			return result;
 		}
 	}

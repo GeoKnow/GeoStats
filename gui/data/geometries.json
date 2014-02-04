@@ -12011,7 +12011,7 @@
       "no image","label":"Regierungsbezirk Oberbayern","comment":
       "no comment","uri":
       "http://de.dbpedia.org/resource/Regierungsbezirk_Oberbayern","url":
-      "no homepage"}],"federalState":[{"sgeo":[[{"lon":"8.5268","lat":
+      "no homepage"}],"federalStates":[{"sgeo":[[{"lon":"8.5268","lat":
             "53.6049"},{"lon":"8.5923","lat":"53.5929"},{"lon":"8.5950",
             "lat":"53.5934"},{"lon":"8.6456","lat":"53.6017"},{"lon":
             "8.6457","lat":"53.6018"},{"lon":"8.6506","lat":"53.6026"},{

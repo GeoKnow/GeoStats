@@ -22,54 +22,55 @@ Create View Template Insolvenzen
   
     gs-qb:GeoStatsInsolvenzen a qb:DataSet ;
         qb:structure gs-qb:GeoStatsInsolvenzenStructure ;
-        rdfs:label "Geostats Datacube Dataset" ;
+        rdfs:label "Geostats Datacube Dataset"@de ;
         dct:publisher <http://semanticweb.org/id/AKSW> ;
         dct:issued "2014-03-02"^^xsd:date ;
         dct:subject sdmx-subject:3.2 ;
-        rdfs:comment "This data set was created from the data given by http://regionalstatistik.de. Alle Länder: Eventuelle Abweichungen zu anderen Veröffentlichungen ergeben sich durch nachträgliche Korrekturen; diese sind auch nicht in das Bundesergebnis eingeflossen; In den Ergebnissen der einzelnen Bundesländer können Unternehmen enthalten sein, die ihren Sitz nicht im Nachweisland haben, aber deren Insolvenzabwicklung im Nachweisland erfolgt. Berlin (2000): bezogen auf den Gebietsstand 01.01.2001 Hessen (2004): Ergebnisse für das Land Hessen sowie den Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden. Berlin: Kreistabelle liegt auch für Bezirke vor. Baden-Württemberg: Berichtsjahr 1995-2010 Gebietsstand 01.01.1979; ab Berichtsjahr 2011 Gebietsstand 01.01.2011 Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden." .
+        rdfs:comment "This data set was created from the data given by http://regionalstatistik.de. Alle Länder: Eventuelle Abweichungen zu anderen Veröffentlichungen ergeben sich durch nachträgliche Korrekturen; diese sind auch nicht in das Bundesergebnis eingeflossen; In den Ergebnissen der einzelnen Bundesländer können Unternehmen enthalten sein, die ihren Sitz nicht im Nachweisland haben, aber deren Insolvenzabwicklung im Nachweisland erfolgt. Berlin (2000): bezogen auf den Gebietsstand 01.01.2001 Hessen (2004): Ergebnisse für das Land Hessen sowie den Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden. Berlin: Kreistabelle liegt auch für Bezirke vor. Baden-Württemberg: Berichtsjahr 1995-2010 Gebietsstand 01.01.1979; ab Berichtsjahr 2011 Gebietsstand 01.01.2011 Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden."@de .
         
     # -- Data structure definition ----------------------------
     
     gs-qb:GeoStatsInsolvenzenStructure a qb:DataStructureDefinition;
         
-        # The dimensions
-        qb:component gs-qb:refAreaSpec, gs-qb:refPeriod, gs-qb:beantragteInsolvenzverfahrenSpec, gs-qb:eroeffnetInsolvenzverfahrenSpec, gs-qb:measureSpec,  
+        # the specifications
+        qb:component gs-qb:refAreaSpec, gs-qb:refPeriodSpec, gs-qb:beantragteInsolvenzverfahrenSpec, gs-qb:eroeffnetInsolvenzverfahrenSpec, gs-qb:measureSpec,  
             gs-qb:vorraussichtlicheForderungenSpec, gs-qb:beschaeftigteSpec, gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahrenSpec, 
             gs-qb:mangelsMasseAbgewieseneInsolvenzverfahrenSpec .
         
+        # The dimensions        
         gs-qb:refAreaSpec a qb:ComponentSpecification ;
             qb:dimension gs-qb:refArea ;
-            rdfs:label "Place of Measure" .
+            rdfs:label "Ort der Messung"@de .
         
         gs-qb:refPeriodSpec a qb:ComponentSpecification ;
             qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Time of Measure" .   
+            rdfs:label "zeit der Messung"@de .   
     
         # -- The measure(s) ------------------------------------ 
         
         gs-qb:beantragteInsolvenzverfahrenSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Beantragte Insolvenzverfahren Insgesamt (Anzahl)" .
+            qb:measure gs-qb:beantragteInsolvenzverfahren ;
+            rdfs:label "Beantragte Insolvenzverfahren Insgesamt (Anzahl)"@de .
         
         gs-qb:eroeffnetInsolvenzverfahrenSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Eröffnete Insolvenzverfahren (Anzahl)" .
+            qb:measure gs-qb:eroeffnetInsolvenzverfahren ;
+            rdfs:label "Eröffnete Insolvenzverfahren (Anzahl)"@de .
             
         gs-qb:mangelsMasseAbgewieseneInsolvenzverfahrenSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Mangels Masse abgewiesene Insolvenzen (Anzahl)" .
+            qb:measure gs-qb:mangelsMasseAbgewieseneInsolvenzverfahren ;
+            rdfs:label "Mangels Masse abgewiesene Insolvenzen (Anzahl)"@de .
             
         gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahrenSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Insolvenzen mit angenommenem Schuldenbereinigungsplan (Anzahl)" .
+            qb:measure gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahren ;
+            rdfs:label "Insolvenzen mit angenommenem Schuldenbereinigungsplan (Anzahl)"@de .
             
         gs-qb:beschaeftigteSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Beschäftigte Personen (Anzahl)" .
+            qb:measure gs-qb:beschaeftigte ;
+            rdfs:label "Beschäftigte Personen (Anzahl)"@de .
             
         gs-qb:vorraussichtlicheForderungenSpec a qb:ComponentSpecification ;
-            qb:dimension gs-qb:refPeriod ;
-            rdfs:label "Vorraussichtliche Forderungen (Euro)" .
+            qb:measure gs-qb:vorraussichtlicheForderungen ;
+            rdfs:label "Vorraussichtliche Forderungen (Euro)"@de .
             
         # -- The attributes ------------------------------------ 
            
@@ -96,32 +97,32 @@ Create View Template Insolvenzen
     gs-qb:beantragteInsolvenzverfahren  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Beantragte Insolvenzverfahren Insgesamt"@de;
         rdfs:subPropertyOf sdmx-measure:obsValue;
-        rdfs:range xsd:decimal .
+        rdfs:range xsd:int .
         
     gs-qb:eroeffnetInsolvenzverfahren  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Eröffnete Insolvenzverfahren"@de;
         rdfs:subPropertyOf sdmx-measure:obsValue;
-        rdfs:range xsd:decimal .
+        rdfs:range xsd:int .
         
     gs-qb:mangelsMasseAbgewieseneInsolvenzverfahren  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Insolvenzverfahren mangels Masse abgewiesen"@de;
         rdfs:subPropertyOf sdmx-measure:obsValue;
-        rdfs:range xsd:decimal .
+        rdfs:range xsd:int .
         
     gs-qb:schuldenbereingungsplanAngenommeneInsolvenzverfahren  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Insolvenzverfahren mit angenommenem Schuldenbereinigungsplan"@de;
         rdfs:subPropertyOf sdmx-measure:obsValue;
-        rdfs:range xsd:decimal .   
+        rdfs:range xsd:int .   
         
     gs-qb:beschaeftigte  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Beschäftigte"@de;
         rdfs:subPropertyOf sdmx-measure:obsValue;
-        rdfs:range xsd:decimal .   
+        rdfs:range xsd:int .   
         
     gs-qb:vorraussichtlicheForderungen  a rdf:Property, qb:MeasureProperty;
         rdfs:label "Vorraussichtliche Forderungen"@de;
         rdfs:subPropertyOf sdmx-measure:currency;
-        rdfs:range xsd:decimal .   
+        rdfs:range xsd:int .   
         
     # -- Dimensions and measures  ----------------------------
     
@@ -140,7 +141,7 @@ Create View Template Insolvenzen
   With
       ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/", ?1, "_", ?2))
       ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?2))
-      ?refPeriod = plainLiteral(?1, xsd:gYear)
+      ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?1))
       ?beantragt = plainLiteral(?4)
       ?eroeffnet = plainLiteral(?5)
       ?masse = plainLiteral(?6)

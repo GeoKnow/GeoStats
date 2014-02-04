@@ -53,7 +53,7 @@
 		<dependency>
 		    <groupId>org.aksw.sparqlify</groupId>
 		    <artifactId>sparqlify-core</artifactId>
-		    <version>0.6.5-SNAPSHOT</version>
+		    <version>0.6.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

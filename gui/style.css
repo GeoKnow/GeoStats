@@ -55,7 +55,7 @@ body {
     /*height: 60px;*/
     float: left;
     margin-right: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     padding: 5px;
     border: 1px solid #999;
 }
@@ -71,11 +71,26 @@ body {
     pointer-events: none;
 }
 
-
-
 #home {
 
     padding: 5px;
+}
+
+.statistic{
+
+    float: left;
+    width: 50%;
+    height: 100%;
+}
+
+#secondary-statistic {
+
+    padding: 10px;
+}
+
+#stats-container {
+
+    padding: 10px;
 }
 
 /* ########################################################################################## */

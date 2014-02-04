@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.aksw.disambiguation.UriResolver;
 import org.geotools.feature.simple.SimpleFeatureImpl;
@@ -39,21 +41,52 @@ public class RdfExport {
 	public static Model getModelFromConfiguration(String namespacePrefix) {
 		Model tmpModel = ModelFactory.createDefaultModel();
 		tmpModel.removeAll();
-		tmpModel.setNsPrefix("gis", "http://www.opengis.net/ont/geosparql#");
-		tmpModel.setNsPrefix("geostats", namespacePrefix);
-		tmpModel.setNsPrefix("geo", URLConstants.NS_GEO);
-		tmpModel.setNsPrefix("sf", URLConstants.NS_SF);
-		tmpModel.setNsPrefix("dc", URLConstants.NS_DC);
-		tmpModel.setNsPrefix("xsd", URLConstants.NS_XSD);
-		tmpModel.setNsPrefix("dbo", "http://dbpedia.org/ontology/");
-		tmpModel.setNsPrefix("dbr", "http://dbpedia.org/resource/");
-		tmpModel.setNsPrefix("de-dbr", "http://de.dbpedia.org/resource/");
-		tmpModel.setNsPrefix("gadm", "http://linkedgeodata.org/ld/gadm2/ontology/");
-		tmpModel.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
-		tmpModel.setNsPrefix("ramon", "http://rdfdata.eionet.europa.eu/ramon/ontology/");
-		tmpModel.setNsPrefix("nuts", "http://nuts.geovocab.org/id/");
-		
+		tmpModel.setNsPrefixes(getNamespaceMapping());
 		return tmpModel;
+	}
+	
+	public static Map<String,String> getNamespaceMapping() {
+		
+		Map<String,String> prefixes = new HashMap<>();
+		prefixes.put("gis", "http://www.opengis.net/ont/geosparql#");
+		prefixes.put("geostats", "http://geostats.aksw.org/");
+		prefixes.put("geo", URLConstants.NS_GEO);
+		prefixes.put("sf", URLConstants.NS_SF);
+		prefixes.put("dc", URLConstants.NS_DC);
+		prefixes.put("xsd", URLConstants.NS_XSD);
+		prefixes.put("dbo", "http://dbpedia.org/ontology/");
+		prefixes.put("dbr", "http://dbpedia.org/resource/");
+		prefixes.put("de-dbr", "http://de.dbpedia.org/resource/");
+		prefixes.put("gadm", "http://linkedgeodata.org/ld/gadm2/ontology/");
+		prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+		prefixes.put("ramon", "http://rdfdata.eionet.europa.eu/ramon/ontology/");
+		prefixes.put("nuts", "http://nuts.geovocab.org/id/");
+		prefixes.put("qb",              "http://purl.org/linked-data/cube#");
+		prefixes.put("gs-qb",           "http://geostats.aksw.org/qb/");
+		prefixes.put("rdf",             "http://www.w3.org/1999/02/22-rdf-syntax-ns#"); 
+		prefixes.put("owl",             "http://www.w3.org/2002/07/owl#");
+		prefixes.put("xsd",             "http://www.w3.org/2001/XMLSchema#");
+		prefixes.put("dct",             "http://purl.org/dc/terms/");
+		prefixes.put("sdmx-concept",    "http://purl.org/linked-data/sdmx/2009/concept#");
+		prefixes.put("sdmx-code",       "http://purl.org/linked-data/sdmx/2009/code#");
+		prefixes.put("sdmx-dimension",  "http://purl.org/linked-data/sdmx/2009/dimension#");
+		prefixes.put("sdmx-attribute",  "http://purl.org/linked-data/sdmx/2009/attribute#");
+		prefixes.put("sdmx-measure",    "http://purl.org/linked-data/sdmx/2009/measure#");
+		prefixes.put("admingeo",        "http://data.ordnancesurvey.co.uk/ontology/admingeo/"); 
+		prefixes.put("sdmx-subject",    "http://purl.org/linked-data/sdmx/2009/subject#"); 
+		prefixes.put("interval",        "http://reference.data.gov.uk/def/intervals/"); 
+		prefixes.put("genesis",        "http://www.regionalstatistik.de/genesis/resource/");
+		return prefixes;
+	}
+	
+	public static String getNamespaceMappingForQuery() {
+		
+		String prefixes = "";
+		for ( Map.Entry<String, String> entry : getNamespaceMapping().entrySet()){
+			prefixes += "PREFIX " + entry.getKey() + ": <" + entry.getValue() + "> \n";
+		}
+		
+		return prefixes;
 	}
 	
 	public static void write(Model model, String filePathAndName) {

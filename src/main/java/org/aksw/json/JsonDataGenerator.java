@@ -151,7 +151,7 @@ public class JsonDataGenerator {
         	area.put("url", url);
 //        	area.put("kinderGarten", kinderGarten);
         	
-        	json.getJSONArray("federalState").put(area);
+        	json.getJSONArray("federalStates").put(area);
         }
 	}
 
@@ -255,7 +255,7 @@ public class JsonDataGenerator {
         	JSONArray multipolygon = new JSONArray();
         	for ( Geometry geo : geos ) {
         		
-        		geo = TopologyPreservingSimplifier.simplify(geo, 0.01);
+//        		geo = TopologyPreservingSimplifier.simplify(geo, 0.01);
         		
         		JSONArray points = new JSONArray();
         		for ( Coordinate p : geo.getCoordinates()) {
@@ -359,7 +359,7 @@ public class JsonDataGenerator {
 		JSONObject json = new JSONObject();
 		json.put("districts", new JSONArray());
 		json.put("adminstrativeDistricts", new JSONArray());
-		json.put("federalState", new JSONArray());
+		json.put("federalStates", new JSONArray());
 		
 		// getting all districts
 		getDistricts(json);
