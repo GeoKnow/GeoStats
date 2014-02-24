@@ -1,0 +1,115 @@
+Prefix qb:              <http://purl.org/linked-data/cube#>
+Prefix gs-qb:           <http://geostats.aksw.org/qb/>  
+Prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+Prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#>
+Prefix owl:             <http://www.w3.org/2002/07/owl#>
+Prefix xsd:             <http://www.w3.org/2001/XMLSchema#>
+Prefix dct:             <http://purl.org/dc/terms/>
+Prefix sdmx-concept:    <http://purl.org/linked-data/sdmx/2009/concept#>
+Prefix sdmx-code:       <http://purl.org/linked-data/sdmx/2009/code#>
+Prefix sdmx-dimension:  <http://purl.org/linked-data/sdmx/2009/dimension#>
+Prefix sdmx-attribute:  <http://purl.org/linked-data/sdmx/2009/attribute#>
+Prefix sdmx-measure:    <http://purl.org/linked-data/sdmx/2009/measure#>
+Prefix admingeo:        <http://data.ordnancesurvey.co.uk/ontology/admingeo/> 
+Prefix sdmx-subject:    <http://purl.org/linked-data/sdmx/2009/subject#> 
+Prefix interval:        <http://reference.data.gov.uk/def/intervals/> 
+
+
+Create View Template Bevoelkerung 
+    As CONSTRUCT {
+
+    # -- Data Set --------------------------------------------
+  
+    gs-qb:GeoStatsBevoelkerung a qb:DataSet ;
+        qb:structure gs-qb:GeoStatsBevoelkerungStructure ;
+        rdfs:label "Bevoelkerung"@de ;
+        dct:publisher <http://semanticweb.org/id/AKSW> ;
+        dct:issued "2014-02-11"^^xsd:date ;
+        dct:subject sdmx-subject:3.2 .
+        
+    # -- Data structure definition ----------------------------
+    
+    gs-qb:GeoStatsBevoelkerungStructure a qb:DataStructureDefinition;
+        
+        # the specifications
+        qb:component gs-qb:refAreaSpec, gs-qb:refPeriodSpec, gs-qb:bevoelkerungInsgesamtSpec, gs-qb:bevoelkerungMaennlichSpec, gs-qb:measureSpec,  
+            gs-qb:bevoelkerungWeiblichSpec .
+        
+        # The dimensions        
+        gs-qb:refAreaSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refArea ;
+            rdfs:label "Ort der Messung"@de .
+        
+        gs-qb:refPeriodSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refPeriod ;
+            rdfs:label "Zeit der Messung"@de .   
+    
+        # -- The measure(s) ------------------------------------ 
+        
+        gs-qb:bevoelkerungInsgesamtSpec a qb:ComponentSpecification ;
+            qb:measure gs-qb:bevoelkerungInsgesamt ;
+            rdfs:label "Bevölkerung Insgesamt"@de .
+        
+        gs-qb:bevoelkerungMaennlichSpec a qb:ComponentSpecification ;
+            qb:measure gs-qb:bevoelkerungMaennlich ;
+            rdfs:label "Bevölkerung Männlich"@de .
+            
+        gs-qb:bevoelkerungWeiblichSpec a qb:ComponentSpecification ;
+            qb:measure gs-qb:bevoelkerungWeiblich ;
+            rdfs:label "Bevölkerung Weiblich"@de .
+            
+        # -- The attributes ------------------------------------ 
+           
+        gs-qb:measureSpec 
+            qb:attribute sdmx-attribute:unitMeasure; 
+            qb:componentRequired "true"^^xsd:boolean;
+            qb:componentAttachment qb:DataSet .
+
+    # -- Dimensions and measures  ----------------------------
+
+        gs-qb:refPeriod  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "time period"@en;
+            rdfs:label "Zeitraum"@de;
+            rdfs:subPropertyOf sdmx-dimension:refPeriod;
+            rdfs:range interval:Interval;
+            qb:concept sdmx-concept:refPeriod .
+            
+        gs-qb:refArea  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "Ort"@de;
+            rdfs:subPropertyOf sdmx-dimension:refArea;
+            rdfs:range admingeo:UnitaryAuthority;
+            qb:concept sdmx-concept:refArea .
+            
+        gs-qb:bevoelkerungInsgesamt  a rdf:Property, qb:MeasureProperty;
+            rdfs:label "Bevölkerung Insgesamt"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:bevoelkerungMaennlich  a rdf:Property, qb:MeasureProperty;
+            rdfs:label "Bevölkerung Männlich"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:bevoelkerungWeiblich  a rdf:Property, qb:MeasureProperty;
+            rdfs:label "Bevölkerung Weiblich"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+    # -- Dimensions and measures  ----------------------------
+    
+        ?observationUri
+          a qb:Observation ;
+          qb:dataSet gs-qb:GeoStatsBevoelkerung ;
+          gs-qb:refArea ?areaUri ;
+          gs-qb:refPeriod ?refPeriod ;
+          gs-qb:bevoelkerungInsgesamt ?insgesamt ;
+          gs-qb:bevoelkerungMaennlich ?maennlich ;
+          gs-qb:bevoelkerungWeiblich ?weiblich ;
+  }
+  With
+      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/", ?3, "_", ?1))
+      ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?1))
+      ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?3))
+      ?insgesamt = plainLiteral(?4)
+      ?maennlich = plainLiteral(?5)
+      ?weiblich = plainLiteral(?6)

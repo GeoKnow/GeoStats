@@ -92,11 +92,7 @@ public class ExtraWurstExtractor {
 					if ( name.equals("Heidekreis") ) insert(model, name, "DE938", "3", (MultiPolygon) geometry);
 					if ( name.equals("Vulkaneifel") ) insert(model, name, "DEB24", "3", (MultiPolygon) geometry);
 					if ( name.equals("Regionalverband Saarbrücken") ) insert(model, name, "DEC01", "3", (MultiPolygon) geometry);
-					
-					if ( name.equals("Ansbach") && feature.getAttribute("RS").toString().equals("09571"))  {
-						System.out.println("ansbach ladnkreis");
-						insert(model, "Landkreis "+ name, "DE256", "3", (MultiPolygon) geometry);
-					}
+					if ( name.equals("Ansbach") && feature.getAttribute("RS").toString().equals("09571"))  insert(model, "Landkreis "+ name, "DE256", "3", (MultiPolygon) geometry);
 	  	      	}
 	    	}
 	    	catch ( Exception e) { e.printStackTrace(); }

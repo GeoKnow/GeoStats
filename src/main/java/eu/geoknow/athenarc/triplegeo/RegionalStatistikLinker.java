@@ -73,7 +73,9 @@ public class RegionalStatistikLinker {
 	    				uri = r.getURI();
 	    			}
 	    		}
-	    		model.add(ResourceFactory.createResource(uri), ResourceFactory.createProperty(ShpToRdf.GEOSTATS_NS, "regionalStatistikId"), id);
+	    		
+	    		if ( id.equals("04") ) uri = "http://de.dbpedia.org/resource/Freie_Hansestadt_Bremen";
+	    		addTriple(model, uri, id, line[1].trim());
 	    	}
 	    	// administrative district
 	    	else if ( id.length() == 3 ) {
@@ -92,7 +94,9 @@ public class RegionalStatistikLinker {
 	    				uri = r.getURI();
 	    			}
 	    		}
-	    		model.add(ResourceFactory.createResource(uri), ResourceFactory.createProperty(ShpToRdf.GEOSTATS_NS, "regionalStatistikId"), id);
+	    		
+	    		addTriple(model, "http://de.dbpedia.org/resource/Freie_Hansestadt_Bremen", "040", line[1].trim());
+	    		addTriple(model, uri, id, line[1].trim());
 	    	}
 	    	// anything else
 	    	else if ( StringUtils.isNumeric(id) ) {
@@ -170,9 +174,25 @@ public class RegionalStatistikLinker {
 	    		else if ( id.equals("03257") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Schaumburg", id, line[1].trim());
 	    		else if ( id.equals("01060") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Segeberg", id, line[1].trim());
 	    		else if ( id.equals("01061") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Steinburg", id, line[1].trim());
-	    		else if ( id.equals("01062") ) addTriple(model, "http://de.dbpedia.org/resource/Lreis_Stormarn", id, line[1].trim());
 	    		else if ( id.equals("03461") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Wesermarsch", id, line[1].trim());
 	    		else if ( id.equals("12070") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Prignitz", id, line[1].trim());
+	    		else if ( id.equals("14730") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Nordsachsen", id, line[1].trim());
+	    		else if ( id.equals("08116") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Esslingen", id, line[1].trim());
+	    		else if ( id.equals("08135") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Heidenheim", id, line[1].trim());
+	    		else if ( id.equals("01062") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Stormarn", id, line[1].trim());
+	    		else if ( id.equals("12060") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Barnim", id, line[1].trim());
+	    		else if ( id.equals("09779") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Donau-Ries", id, line[1].trim());
+	    		else if ( id.equals("03358") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Heidekreis", id, line[1].trim());
+	    		else if ( id.equals("07339") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Mainz-Bingen", id, line[1].trim());
+	    		else if ( id.equals("12065") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Oberhavel", id, line[1].trim());
+	    		else if ( id.equals("09776") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Lindau_(Bodensee)", id, line[1].trim());
+	    		else if ( id.equals("15091") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Wittenberg", id, line[1].trim());
+	    		else if ( id.equals("08337") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Waldshut", id, line[1].trim());
+	    		else if ( id.equals("04011") ) addTriple(model, "http://de.dbpedia.org/resource/Bremen", id, line[1].trim());
+	    		else if ( id.equals("04012") ) addTriple(model, "http://de.dbpedia.org/resource/Bremerhaven", id, line[1].trim());
+	    		else if ( id.equals("1054") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Nordfriesland", id, line[1].trim());
+	    		else if ( id.equals("03454") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Emsland", id, line[1].trim());
+	    	
 	    		else {
 	    			addTriple(model, dbpediaUri, id, line[1].trim());
 	    		}
@@ -200,6 +220,10 @@ public class RegionalStatistikLinker {
 		Resource regional = ResourceFactory.createResource("http://www.regionalstatistik.de/genesis/resource/" + id);
 		model.add(dbpedia, OWL.sameAs, regional);
 		model.add(regional, RDFS.label, originalName);
+		
+		System.out.println("URI: " + dbpediaUri + " ---> " + id);
+		
+		model.add(dbpedia, ResourceFactory.createProperty(ShpToRdf.GEOSTATS_NS, "regionalStatistikId"), id);
 	}
 
 	private static List<Resource> getLayers(Model model, String type) {

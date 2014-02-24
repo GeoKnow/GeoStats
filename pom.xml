@@ -40,20 +40,20 @@
 
 	</repositories>
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework</groupId> -->
-<!-- 			<artifactId>spring-core</artifactId> -->
-<!-- 			<version>4.0.0.RELEASE</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.antlr</groupId> -->
-<!-- 			<artifactId>antlr-runtime</artifactId> -->
-<!-- 			<version>3.5.1</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework</groupId> -->
+		<!-- <artifactId>spring-core</artifactId> -->
+		<!-- <version>4.0.0.RELEASE</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.antlr</groupId> -->
+		<!-- <artifactId>antlr-runtime</artifactId> -->
+		<!-- <version>3.5.1</version> -->
+		<!-- </dependency> -->
 		<dependency>
-		    <groupId>org.aksw.sparqlify</groupId>
-		    <artifactId>sparqlify-core</artifactId>
-		    <version>0.6.6-SNAPSHOT</version>
+			<groupId>org.aksw.sparqlify</groupId>
+			<artifactId>sparqlify-core</artifactId>
+			<version>0.6.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -76,11 +76,6 @@
 			<artifactId>gt-swing</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>com.hp.hpl.jena</groupId> -->
-		<!-- <artifactId>tdb</artifactId> -->
-		<!-- <version>0.8.10</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -99,7 +94,7 @@
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-core</artifactId>
-			<version>2.10.0-20</version>
+			<version>2.10.0-8</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -117,9 +112,9 @@
 			<version>20090211</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google</groupId>
+			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>1.4</version>
+			<version>2.2.4</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -2,12 +2,15 @@ package org.aksw.datacube.rdf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.aksw.Constants;
 import org.aksw.datacube.DataSet;
 import org.aksw.datacube.DataStructureDefinition;
 import org.aksw.datacube.Language;
+import org.aksw.datacube.factory.DataCubeFactory;
 import org.aksw.datacube.observation.Observation;
 import org.aksw.datacube.observation.ObservationValue;
 import org.aksw.datacube.property.DimensionProperty;
@@ -23,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
 
 import eu.geoknow.athenarc.triplegeo.RdfExport;
@@ -34,7 +38,7 @@ public class RdfToDataCube {
 	 * @param createDefaultModel
 	 * @return
 	 */
-	public static List<DataSet> generate(QueryExecutionFactory qef) {
+	public static Map<String,DataSet> read(QueryExecutionFactory qef) {
 		
 		QueryExecution qe = qef.createQueryExecution(
 				RdfExport.getNamespaceMappingForQuery() +
@@ -49,7 +53,7 @@ public class RdfToDataCube {
 				"}");
 		
 		ResultSet rs = qe.execSelect();
-		List<DataSet> dataSets = new ArrayList<>();
+		Map<String,DataSet> dataSets = new HashMap<>();
 		
 		while ( rs.hasNext() ) {
 			
@@ -58,21 +62,22 @@ public class RdfToDataCube {
 			String dataSetUri   = next.get("dataSet").asResource().getURI();
 			String structureUri = next.get("structure").asResource().getURI();
 			
-			DataStructureDefinition structure = new DataStructureDefinition();
+			DataStructureDefinition structure = DataCubeFactory.getInstance().createDataStructureDefinition(structureUri);
 			structure.addAllDimensionSpecification(getDimensionComponentSpecifications(qef, structureUri));
 			structure.addAllMeasureSpecification(getMeasureComponentSpecifications(qef, structureUri));
 			structure.addAllAttributeSpecification(getAttributeComponentSpecifications(qef, structureUri));
 			
-			DataSet dataSet = new DataSet(structure);
+			DataSet dataSet = DataCubeFactory.getInstance().createDataSet(dataSetUri);
+			dataSet.setStructure(structure);
 			if ( next.contains("date") ) dataSet.setPublishDate(next.get("date").asLiteral().getLexicalForm());
 			if ( next.contains("publisher") ) dataSet.setPublisherUri(next.get("publisher").asResource().getURI());
 			if ( next.contains("label") ) dataSet.addLabel(next.get("label").asLiteral().getLexicalForm(), Language.valueOf(next.get("label").asLiteral().getLanguage()));
 			if ( next.contains("comment") ) dataSet.addComment(next.get("comment").asLiteral().getLexicalForm(), Language.valueOf(next.get("comment").asLiteral().getLanguage()));
 			if ( next.contains("subject") ) dataSet.setSubjects(new ArrayList<>(Arrays.asList(next.get("subject").asResource().getURI())));
 			
-			dataSet.addAllObservations(getObservations(qef, dataSet, dataSetUri));
+			dataSet.addAllObservations(getObservations(qef, dataSet));
 			
-			dataSets.add(dataSet);
+			dataSets.put(dataSet.getUri(), dataSet);
 		}
 		
 		qe.close();
@@ -108,7 +113,7 @@ public class RdfToDataCube {
 	 * @param dataSetUri
 	 * @return
 	 */
-	private static List<Observation> getObservations(QueryExecutionFactory qef, DataSet dataset, String dataSetUri) {
+	private static List<Observation> getObservations(QueryExecutionFactory qef, DataSet dataset) {
 		
 		List<String> variables = new ArrayList<>();
 		String dimensionsAndMeasuresPart = "";
@@ -126,7 +131,7 @@ public class RdfToDataCube {
 		String query = RdfExport.getNamespaceMappingForQuery() +
 			"SELECT ?observation "+ StringUtils.join(variables, " ")+" { " +
 				" ?observation a qb:Observation . " +
-				" ?observation qb:dataSet <"+dataSetUri+"> . " +
+				" ?observation qb:dataSet <"+dataset.getUri()+"> . " +
 				dimensionsAndMeasuresPart +
 			"}";
 		
@@ -137,7 +142,7 @@ public class RdfToDataCube {
 		while ( rs.hasNext() ) {
 			
 			QuerySolution next = rs.next();
-			Observation obs = new Observation();
+			Observation obs = DataCubeFactory.getInstance().createObservation(next.get("observation").asResource().getURI());
 			obs.addAllDimensionProperties(dataset.getStructure().getDimensionSpecifications());
 			
 			for ( MeasureComponentSpecification spec : dataset.getStructure().getMeasureSpecifications() ) {
@@ -165,6 +170,12 @@ public class RdfToDataCube {
 		return new ArrayList<>();
 	}
 
+	/**
+	 * 
+	 * @param qef
+	 * @param structureUri
+	 * @return
+	 */
 	private static List<MeasureComponentSpecification> getMeasureComponentSpecifications(QueryExecutionFactory qef, String structureUri) {
 		
 		QueryExecution measureQE = qef.createQueryExecution(
@@ -176,6 +187,7 @@ public class RdfToDataCube {
 					" ?measure rdfs:label ?label . " +
 					" ?measure rdfs:range ?range . " +
 					" ?measure rdfs:subPropertyOf ?subPropertyOf . " +
+					" FILTER( lang(?specLabel) = 'de' && lang(?label) = 'de' ) " +
 				"}" +
 				"ORDER BY ?spec");
 		
@@ -186,12 +198,13 @@ public class RdfToDataCube {
 			
 			QuerySolution next = rs.next();
 			
-			MeasureProperty totalInsolvenciesDimension = new MeasureProperty(next.get("?measure").asResource().getURI().replace(Constants.GEOSTATS_DATA_CUBE_NS, ""));
-			totalInsolvenciesDimension.setRdfsRangeUri(next.get("?range").asResource().getURI());
-			totalInsolvenciesDimension.setSuperPropertyUri(next.get("?subPropertyOf").asResource().getURI());
-			totalInsolvenciesDimension.addLabel(next.get("?label").asLiteral().getLexicalForm(), Language.valueOf(next.get("?label").asLiteral().getLanguage()));
+			MeasureProperty measureProperty = DataCubeFactory.getInstance().createMeasureProperty(next.get("?measure").asResource().getURI());
+			measureProperty.setRdfsRangeUri(next.get("?range").asResource().getURI());
+			measureProperty.setSuperPropertyUri(next.get("?subPropertyOf").asResource().getURI());
+			measureProperty.addLabel(next.get("?label").asLiteral().getLexicalForm(), Language.valueOf(next.get("?label").asLiteral().getLanguage()));
 			
-			MeasureComponentSpecification insolvenciesSpecification = new MeasureComponentSpecification(totalInsolvenciesDimension);
+			MeasureComponentSpecification insolvenciesSpecification = DataCubeFactory.getInstance().createMeasureComponentSpecification(next.get("?spec").asResource().getURI());
+			insolvenciesSpecification.setComponentProperty(measureProperty);
 			insolvenciesSpecification.addLabel(next.get("?specLabel").asLiteral().getLexicalForm(), Language.valueOf(next.get("?specLabel").asLiteral().getLanguage()));
 			
 			measureSpecs.add(insolvenciesSpecification);
@@ -200,6 +213,12 @@ public class RdfToDataCube {
 		return measureSpecs;
 	}
 
+	/**
+	 * 
+	 * @param qef
+	 * @param structureUri
+	 * @return
+	 */
 	private static List<DimensionComponentSpecification> getDimensionComponentSpecifications(QueryExecutionFactory qef, String structureUri) {
 		
 		QueryExecution measureQE = qef.createQueryExecution(
@@ -211,6 +230,7 @@ public class RdfToDataCube {
 					" ?measure rdfs:label ?label . " +
 					" ?measure rdfs:range ?range . " +
 					" ?measure rdfs:subPropertyOf ?subPropertyOf . " +
+					" FILTER( lang(?specLabel) = 'de' && lang(?label) = 'de' ) " +
 				"}" +
 				"ORDER BY ?spec");
 		
@@ -221,12 +241,13 @@ public class RdfToDataCube {
 			
 			QuerySolution next = rs.next();
 			
-			DimensionProperty dimension = new DimensionProperty(next.get("?measure").asResource().getURI().replace(Constants.GEOSTATS_DATA_CUBE_NS, ""));
+			DimensionProperty dimension = DataCubeFactory.getInstance().createDimensionProperty(next.get("?measure").asResource().getURI()); 
 			dimension.setRdfsRangeUri(next.get("?range").asResource().getURI());
 			dimension.setSuperPropertyUri(next.get("?subPropertyOf").asResource().getURI());
 			dimension.addLabel(next.get("?label").asLiteral().getLexicalForm(), Language.valueOf(next.get("?label").asLiteral().getLanguage()));
 			
-			DimensionComponentSpecification dimensionSpecification = new DimensionComponentSpecification(dimension);
+			DimensionComponentSpecification dimensionSpecification = DataCubeFactory.getInstance().createDimensionComponentSpecification(next.get("?spec").asResource().getURI());
+			dimensionSpecification.setComponentProperty(dimension);
 			dimensionSpecification.addLabel(next.get("?specLabel").asLiteral().getLexicalForm(), Language.valueOf(next.get("?specLabel").asLiteral().getLanguage()));
 			
 			dimensionSpecs.add(dimensionSpecification);

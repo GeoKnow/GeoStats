@@ -8,7 +8,9 @@ import org.aksw.datacube.spec.ComponentSpecification;
 import org.aksw.datacube.spec.DimensionComponentSpecification;
 import org.aksw.datacube.spec.MeasureComponentSpecification;
 
-public class DataStructureDefinition implements Resource {
+import com.hp.hpl.jena.rdf.model.Resource;
+
+public class DataStructureDefinition extends AbstractResource {
 	
 	private List<DimensionComponentSpecification> dimensionSpecifications;
 	private List<AttributeComponentSpecification> attributeSpecifications;
@@ -17,7 +19,8 @@ public class DataStructureDefinition implements Resource {
 	/**
 	 * 
 	 */
-	public DataStructureDefinition() {
+	public DataStructureDefinition(Resource resource) {
+		super(resource);
 		
 		this.dimensionSpecifications = new ArrayList<>();
 		this.attributeSpecifications = new ArrayList<>();

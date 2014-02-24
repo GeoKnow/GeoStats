@@ -11,11 +11,13 @@ import java.util.Map;
 
 import org.aksw.datacube.observation.Observation;
 
+import com.hp.hpl.jena.rdf.model.Resource;
+
 /**
  * @author Daniel Gerber <daniel.gerber@icloud.com>
  *
  */
-public class DataSet implements Resource {
+public class DataSet extends AbstractResource {
 	
 	private DataStructureDefinition structure;
 	private Map<Language, String> labels;
@@ -25,15 +27,19 @@ public class DataSet implements Resource {
 	private List<String> subjects;
 	private List<Observation> observations;
 	
-	public DataSet(DataStructureDefinition structure){
+	/**
+	 * 
+	 * @param resource
+	 */
+	public DataSet(Resource resource) {
+		super(resource);
 		
-		this.structure = structure;
 		this.labels = new HashMap<>();
 		this.comments = new HashMap<>();
 		this.subjects = new ArrayList<>();
 		this.observations = new ArrayList<>();
 	}
-	
+
 	/**
 	 * @return the structure
 	 */
@@ -106,6 +112,16 @@ public class DataSet implements Resource {
 	public void setSubjects(List<String> subjects) {
 		this.subjects = subjects;
 	}
+	
+	public List<Observation> getObservations(String uri) {
+		
+		List<Observation> obs = new ArrayList<>();
+
+		for ( Observation ob : this.observations ) if ( ob.getUri().equals(uri) ) obs.add(ob);
+		
+		return obs;
+	}
+	
 	/**
 	 * @return the observations
 	 */
@@ -151,11 +167,6 @@ public class DataSet implements Resource {
 	 */
 	public void addObservation(Observation obs) {
 		this.observations.add(obs);
-	}
-
-	@Override
-	public String getUri() {
-		return "NOT YET IMPLEMENTED";
 	}
 
 	/**

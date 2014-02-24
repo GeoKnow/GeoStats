@@ -124,9 +124,15 @@ public class NutsDBpediaLinker {
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE40F") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Prignitz";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE405") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Barnim";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE40I") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Uckermark";
-			
-//			System.out.println(nutsDistrictUri + " > " + dbpediaUri);
-			
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE113") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Esslingen";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE11C") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Heidenheim";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEF0F") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Stormarn";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE27A") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Lindau_(Bodensee)";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEE0E") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Wittenberg";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE13A") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Waldshut";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEF07") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Nordfriesland";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE949") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Emsland";
+						
 			nutsUriToDbpediaUri.put(nutsDistrictUri, dbpediaUri);
 		}
 		qe.close();

@@ -3,35 +3,28 @@
  */
 package org.aksw.json;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPOutputStream;
 
+import org.aksw.datacube.DataSet;
+import org.aksw.datacube.Language;
+import org.aksw.datacube.observation.Observation;
+import org.aksw.datacube.observation.ObservationValue;
+import org.aksw.datacube.property.MeasureProperty;
+import org.aksw.datacube.rdf.RdfToDataCube;
 import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
 import org.aksw.jena_sparql_api.cache.extra.CacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
-import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -48,17 +41,12 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
-import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.reasoner.Reasoner;
-import com.hp.hpl.jena.reasoner.ReasonerRegistry;
 import com.hp.hpl.jena.util.FileManager;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 /**
  * @author Daniel Gerber <daniel.gerber@icloud.com>
@@ -66,56 +54,79 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
  */
 public class JsonDataGenerator {
 	
+	static Set<String> values = new HashSet<>();
+	
 	static QueryExecutionFactory qef;
+	static Map<String,DataSet> datasets;
 	static String query = 
 			"PREFIX gis: <http://www.opengis.net/ont/geosparql#> " +
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
 			"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-			"SELECT ?s ?dbpedia { " +
-//			"	?s gis:hasGeometry ?geo . " +
+			"PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+			"PREFIX geostats: <http://geostats.aksw.org/> " +
+			"SELECT ?s ?dbpedia ?regionalStatistik { " +
 			"   ?s <http://www.w3.org/2002/07/owl#sameAs> ?dbpedia . " +
 			"   ?dbpedia rdf:type <RDF:TYPE> . " +
-//			"   ?geo gis:asWKT ?wkt " +
-			"}";
-	
-	static {
-		
-		try {
-			
-			Model data = FileManager.get().loadModel("data/geostats.ttl", "TURTLE");
-//		    Reasoner reasoner = ReasonerRegistry.getOWLReasoner();
-//		    infmodel = ModelFactory.createInfModel(reasoner, data);
-			
-			QueryExecutionFactory sparql = new QueryExecutionFactoryModel(data);
-			CacheEx cache = new CacheExImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false));
-			qef = new QueryExecutionFactoryCacheEx(sparql, cache);
-		}
-		catch ( Exception e) {
-			
-			e.printStackTrace();
-		}
-	}
+//			"   FILTER NOT EXISTS { ?dbpedia geostats:regionalStatistikId ?regionalStatistik } " +
+			"   ?dbpedia geostats:regionalStatistikId ?regionalStatistik . " +
+			"} " +
+			"ORDER BY ?dbpedia";
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, JSONException, ParseException, IOException {
 		
+		Model model = FileManager.get().loadModel("data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.ttl", "TURTLE");
+		model.add(FileManager.get().loadModel("data/sparqlify/bevoelkerung/bevoelkerung-kreisebene-173-01-4.ttl", "TURTLE"));
+		datasets = RdfToDataCube.read(RdfToDataCube.createQueryExecutionFactory(model));
+		
 		JsonDataGenerator.generate();
+		
+		for ( String  s : JsonDataGenerator.values) System.out.println(s);
+	}
+	
+	public static void generate() throws JSONException, ParseException, IOException, ClassNotFoundException, SQLException {
+		
+		Model data = FileManager.get().loadModel("data/geostats.ttl", "TURTLE");
+		QueryExecutionFactory sparql = new QueryExecutionFactoryModel(data);
+		CacheEx cache = new CacheExImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false));
+		qef = new QueryExecutionFactoryCacheEx(sparql, cache);
+		
+		JSONObject json = new JSONObject();
+		json.put("districts", new JSONArray());
+		json.put("adminstrativeDistricts", new JSONArray());
+		json.put("federalStates", new JSONArray());
+		
+		// getting all districts
+		getDistricts(json);
+		getAdminstrativeDistricts(json);
+		getFederalStates(json);
+		
+        String output = json.toString(); 
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonElement je = new JsonParser().parse(json.toString());
+		output = gson.toJson(je);
+        
+        FileUtils.write(new File("/Users/gerb/Development/workspaces/java/geostats/gui/data/geometries.json"), output , "UTF-8");
 	}
 	
 	private static void getFederalStates(JSONObject json) throws ParseException, JSONException {
 		
 		QueryExecution qExec = qef.createQueryExecution(query.replace("RDF:TYPE", "http://dbpedia.org/ontology/FederalState"));
+		
 		ResultSet rs = qExec.execSelect();
 		Set<String> done = new HashSet<>();
 		
 //		ResultSetFormatter.out(rs);
+//		System.exit(0);
 		
 		int i = 1;
         while (rs.hasNext()) {
         	
+        	System.out.println("FS: " + i++);
         	QuerySolution result = rs.next();
         	
         	// get string values
         	String uri			 = result.get("dbpedia").asResource().getURI();
+        	String regionID	 	 = result.get("regionalStatistik").asLiteral().getLexicalForm();
         	
         	if ( done.contains(uri) ) continue;
         	done.add(uri);
@@ -125,7 +136,6 @@ public class JsonDataGenerator {
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
         	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());	
-//        	String kinderGarten	 = getKindergartenCount(uri);
         	
         	JSONArray multipolygon = new JSONArray();
         	for ( Geometry geo : geos ) {
@@ -149,7 +159,7 @@ public class JsonDataGenerator {
         	area.put("comment", comment);
         	area.put("img", img);
         	area.put("url", url);
-//        	area.put("kinderGarten", kinderGarten);
+        	area.put("datacubes", getDataCubes(regionID));
         	
         	json.getJSONArray("federalStates").put(area);
         }
@@ -181,6 +191,9 @@ public class JsonDataGenerator {
 		QueryExecution qExec = qef.createQueryExecution(query.replace("RDF:TYPE", "http://dbpedia.org/ontology/AdministrativeDistrict"));
 		ResultSet rs = qExec.execSelect();
 		
+//		ResultSetFormatter.out(rs);
+//		System.exit(0);
+		
 		Set<String> done = new HashSet<>();
 		int i = 1;
         while (rs.hasNext()) {
@@ -190,14 +203,16 @@ public class JsonDataGenerator {
         	
         	// get string values
         	String uri			 = result.get("dbpedia").asResource().getURI();
+        	String regionID	 	 = result.get("regionalStatistik").asLiteral().getLexicalForm();
+        	
         	if ( done.contains(uri) ) continue;
         	done.add(uri);
+        	
         	String label		 = getLabel(uri);
         	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
         	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());		
-//        	String kinderGarten	 = getKindergartenCount(uri);
         	
         	JSONArray multipolygon = new JSONArray();
         	for ( Geometry geo : geos ) {
@@ -221,7 +236,7 @@ public class JsonDataGenerator {
         	area.put("comment", comment);
         	area.put("img", img);
         	area.put("url", url);
-//        	area.put("kinderGarten", kinderGarten);
+        	area.put("datacubes", getDataCubes(regionID));
         	
         	json.getJSONArray("adminstrativeDistricts").put(area);
         }
@@ -236,26 +251,26 @@ public class JsonDataGenerator {
 		int i = 1;
         while (rs.hasNext()) {
         	
-        	System.out.println("DIS: " + i++);
         	QuerySolution result = rs.next();
         	
         	// get string values
         	String uri			 = result.get("dbpedia").asResource().getURI();
+        	String regionID	 	 = result.get("regionalStatistik").asLiteral().getLexicalForm();
+        	
+        	// avoid having dupliacte items like berlin (district, admin districit and federal state)
         	if ( done.contains(uri) ) continue;
-//        	if ( !uri.contains("Nordwestmecklenburg"))continue;
         	done.add(uri);
+        	
+        	System.out.println("DIS: " + i++ + "  -> " + uri);
         	
         	String label		 = getLabel(uri);
         	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
         	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());	
-//        	String kinderGarten	 = getKindergartenCount(uri);
         	
         	JSONArray multipolygon = new JSONArray();
         	for ( Geometry geo : geos ) {
-        		
-//        		geo = TopologyPreservingSimplifier.simplify(geo, 0.01);
         		
         		JSONArray points = new JSONArray();
         		for ( Coordinate p : geo.getCoordinates()) {
@@ -276,10 +291,36 @@ public class JsonDataGenerator {
         	area.put("label", label);
         	area.put("comment", comment);
         	area.put("img", img);
-//        	area.put("kinderGarten", kinderGarten);
+        	area.put("datacubes", getDataCubes(regionID));
         	
         	json.getJSONArray("districts").put(area);
         }
+	}
+
+	private static JSONObject getDataCubes(String id) throws JSONException {
+		
+		String uri = "http://geostats.aksw.org/qb/observation/2012_" + id;
+		JSONObject datasetsJson = new JSONObject();
+		
+		for ( DataSet set : datasets.values() ) {
+			
+			JSONObject dataset = new JSONObject();
+			dataset.put("name", set.getLabels().get(Language.de));
+			dataset.put("uri", set.getUri());
+			
+			JSONObject values = new JSONObject();
+			for ( Observation obs : set.getObservations(uri) ) {
+				for( Entry<MeasureProperty, ObservationValue> entry : obs.getValues().entrySet() ) {
+					values.put(entry.getKey().getUri(), entry.getValue().getValue());
+					
+					JsonDataGenerator.values.add(entry.getValue().getValue());
+				}
+			}
+			dataset.put("values", values);
+			datasetsJson.put(set.getUri(), dataset);
+		}
+		
+		return datasetsJson;
 	}
 
 	/**
@@ -352,25 +393,5 @@ public class JsonDataGenerator {
 		while ( rs.hasNext()) return rs.next().get("label").asLiteral().getLexicalForm();
 		
 		return "no label";
-	}
-
-	public static void generate() throws JSONException, ParseException, IOException {
-		
-		JSONObject json = new JSONObject();
-		json.put("districts", new JSONArray());
-		json.put("adminstrativeDistricts", new JSONArray());
-		json.put("federalStates", new JSONArray());
-		
-		// getting all districts
-		getDistricts(json);
-		getAdminstrativeDistricts(json);
-		getFederalStates(json);
-		
-        String output = json.toString(); 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonElement je = new JsonParser().parse(json.toString());
-		output = gson.toJson(je);
-        
-        FileUtils.write(new File("/Users/gerb/Development/workspaces/java/geostats/gui/data/geometries.json"), output , "UTF-8");
 	}
 }

@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aksw.Constants;
+import org.aksw.datacube.AbstractResource;
 import org.aksw.datacube.Language;
-import org.aksw.datacube.Resource;
 import org.aksw.datacube.property.ComponentProperty;
-import org.aksw.datacube.property.MeasureProperty;
 
-public abstract class ComponentSpecification implements Resource {
+import com.hp.hpl.jena.rdf.model.Resource;
+
+public abstract class ComponentSpecification extends AbstractResource {
 
 	protected String name;
 	protected Map<Language,String> labels;
@@ -19,16 +20,10 @@ public abstract class ComponentSpecification implements Resource {
 	 * @param refPeriodDimension 
 	 * 
 	 */
-	public ComponentSpecification(ComponentProperty property){
-		this.labels = new HashMap<>();
-		this.property = property;
-		this.name = property.getName() + "Specification";
-	}
-	
-	@Override
-	public String getUri(){
+	public ComponentSpecification(Resource resource){
+		super(resource);
 		
-		return Constants.GEOSTATS_DATA_CUBE_NS + this.name;
+		this.labels = new HashMap<>();
 	}
 	
 	/**
@@ -36,6 +31,14 @@ public abstract class ComponentSpecification implements Resource {
 	 * @return
 	 */
 	public abstract ComponentProperty getComponentProperty();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public void setComponentProperty(ComponentProperty componentProperty) {
+		this.property = componentProperty;
+	}
 
 	/**
 	 * 

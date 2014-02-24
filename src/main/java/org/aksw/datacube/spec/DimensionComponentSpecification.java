@@ -2,6 +2,8 @@ package org.aksw.datacube.spec;
 
 import org.aksw.datacube.property.DimensionProperty;
 
+import com.hp.hpl.jena.rdf.model.Resource;
+
 public class DimensionComponentSpecification extends ComponentSpecification {
 	
 	private int order;
@@ -10,8 +12,8 @@ public class DimensionComponentSpecification extends ComponentSpecification {
 	 * 
 	 * @param property
 	 */
-	public DimensionComponentSpecification(DimensionProperty property) {
-		super(property);
+	public DimensionComponentSpecification(Resource resource) {
+		super(resource);
 	}
 	
 	/**

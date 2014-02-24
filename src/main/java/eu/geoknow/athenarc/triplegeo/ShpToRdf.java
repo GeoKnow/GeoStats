@@ -21,6 +21,7 @@ package eu.geoknow.athenarc.triplegeo;
 
 //import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,12 +43,13 @@ public class ShpToRdf {
 	
 	public static final String GEOSTATS_NS = "http://geostats.aksw.org/";
 
-	public static void main(String[] args) throws IOException, InterruptedException, JSONException, ParseException {
+	public static void main(String[] args) throws IOException, InterruptedException, JSONException, ParseException, ClassNotFoundException, SQLException {
 		
 		Model model = RdfExport.getModelFromConfiguration("http://geostats.aksw.org/");
 		
 		System.out.println("Generating Backend Data!");
 		ExtraWurstExtractor.extract(model);
+		
 		new NutsLoader(model).generateRDF();
 		NutsDBpediaLinker nutsDBpediaLinker = new NutsDBpediaLinker(model);
 		nutsDBpediaLinker.linkDistricts();

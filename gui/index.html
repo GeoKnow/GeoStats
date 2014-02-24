@@ -9,12 +9,38 @@
 
     <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="lib/tablesort/bootstrap-sortable.css" />
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" >
     <!-- Include the plugin's CSS and JS: -->
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-3.0.3.min.css" type="text/css"/>
 </head>
 <body>
-    <div id="content">
+    <script type="text/template" id="result-table">
+        <table id="result-table" class='table table-bordered sortable table-hover'>
+            <thead>
+                <tr>
+                    <th style="width: 10%">Wappen</th>
+                    <th style="width: 22%">Name</th>
+                    <th style="width: 22%"><%= primary.replace("http://geostats.aksw.org/qb/", "") %></th>
+                    <th style="width: 22%"><%= secondary.replace("http://geostats.aksw.org/qb/", "").replace("empty", "—") %></th>
+                    <th style="width: 22%" data-defaultsort="desc">Kombiniert</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% _.each(entities, function(entity){ %>
+                    <tr id="tr-<%= entity.uri %>" style="cursor: pointer;">   
+                        <td><img style='width: 50px' src='<%= entity.img %>'/></td>
+                        <td><a href='<%= entity.uri %>'><%= entity.label %></a></td>
+                        <td><%= entity.primary %></td>
+                        <td><%= entity.secondary %></td>
+                        <td><%= Math.round(entity.value * 1000) / 1000 %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </script>
+
+    <div id="content" class="container">
         <div id="map">
             <div id="map-content">
                 <div id="map-inner-shadow"></div>                
@@ -25,15 +51,15 @@
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs">
-              <li><a href="#home" data-toggle="tab">Home</a></li>
+              <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
               <li><a href="#info" data-toggle="tab" id="nav-button-info">Infos</a></li>
-              <li class="active"><a href="#statistics" data-toggle="tab">Statistiken</a></li>
-              <li><a href="#geometry-info" data-toggle="tab">Ergebnisse</a></li>
+              <li><a href="#statistics" data-toggle="tab">Statistiken</a></li>
+              <li><a href="#result" data-toggle="tab" id="nav-button-result">Ergebnisse</a></li>
             </ul>
 
             <!-- tab panes -->
-            <div class="tab-content">
-                <div class="tab-pane fade" id="home">
+            <div class="tab-content" style="overflow-y: scroll;">
+                <div class="tab-pane fade active in" id="home" >
                     <div class="page-header">
                         <h1>GeoStats<small> Visualizing interlinked RDF data cubes on maps</small></h1>
                         <ul>
@@ -46,71 +72,60 @@
                     </div>
                 </div>
                 <div class="tab-pane fade" id="info">
-                  
                 </div>
-                <div class="tab-pane fade in active" id="statistics">
+                <div class="tab-pane fade" id="statistics">
                     <div id="stats-container">
+                        <div id="error-message" class='alert alert-danger hide'></div>  
                         <div style="margin-bottom: 20px;">
                             <h4>Administrative Ebene wählen:</h4>
                             <div id="layer-chooser" class="btn-group">
                               <button type="button" class="btn btn-default" id="federalStates">Bundesländer</button>
                               <button type="button" class="btn btn-default" id="adminstrativeDistricts">Regierungsbezirke</button>
-                              <button type="button" class="btn btn-default" id="districts">Kreise und kreisfreie Städte</button>
+                              <button type="button" class="btn btn-default active" id="districts">Kreise und kreisfreie Städte</button>
                             </div>
                         </div>
                         <div stlye="clear:both;"></div>
                         <div class="statistic">
                             <h4>Primäre Statistik auswählen:</h4>
-                            <select id="primary-statistic" class="multiselect">
-                                <option value="federalState" selected>Insolvenzen</option>
-                                <option value="adminstrativeDistricts">Geburten</option>
-                                <option value="districts" >Tode</option>
+                            <select id="primary-statistic">
                             </select>
                             <h4 style="padding-top: 10px;">Maß für Primäre Statistik auswählen:</h4>
                             <select id="primary-statistic-measure" class="multiselect">
-                                <option value="federalState" selected>Insolvenzen</option>
-                                <option value="adminstrativeDistricts">Geburten</option>
-                                <option value="districts">Tode</option>
                             </select>
                         </div>
                         <div class="statistic">
                             <h4>Sekundäre Statistik auswählen:</h4>
                             <select id="secondary-statistic" class="multiselect">
-                                <option value="federalState" selected>optional</option>
-                                <option value="federalState">Insolvenzen</option>
-                                <option value="adminstrativeDistricts">Geburten</option>
-                                <option value="districts" >Tode</option>
+                                <option value="optional" selected>optional</option>
                             </select>
                             <h4 style="padding-top: 10px;">Maß für Sekundäre Statistik auswählen:</h4>
                             <select id="secondary-statistic-measure" class="multiselect">
-                                <option value="federalState" selected>optional</option>
-                                <option value="federalState">Insolvenzen</option>
-                                <option value="adminstrativeDistricts">Geburten</option>
-                                <option value="districts" >Tode</option>
                             </select>
                             <div style="clear:both;"></div>
                         </div>
-                        <button style="margin-top: 25px;" type="button" class="btn btn-success">Visualisierung</button>
-                    </div>                    
+                        <button style="margin-top: 25px;" type="button" class="btn btn-success" id="start">Visualisierung</button>
+                    </div>    
                 </div>
-                <div class="tab-pane fade" id="geometry-info">
-                    See the results
+                <div class="tab-pane fade" id="result">
+                    <div class="container-fluid" style="padding: 10px; height: 100%; overflow-y: scroll;" id="results">
+                    </div>
                 </div>
             </div>
         </div>    
     </div>
-    
 
     <script src="lib/leaflet/leaflet.js"></script>
     <script src="lib/jquery/jquery-1.10.2.min.js"></script>
     <script src="lib/underscore/underscore-min.js"></script>
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script src="lib/tablesort/bootstrap-sortable.js"></script>
     <script>
 
-    $(document).ready(function() {
+    var entities = '';
 
-        var entities = '';
+    $(document).ready(function() {
+        
         var map = L.map('map-content', {
             center: [51.399206, 10.349121],
             zoom: 6,
@@ -121,18 +136,32 @@
         });
 
         var sourcePoints = L.featureGroup().addTo(map);
+        var currentEntity = L.featureGroup().addTo(map);
 
         L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/96931/256/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '&copy; <a href="http://openstreetmap.org">OSM</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
         }).addTo(map);
 
-        $('#primary-statistic').multiselect();
-        $('#primary-statistic-measure').multiselect();
-        $('#secondary-statistic').multiselect();
-        $('#secondary-statistic-measure').multiselect();
+        $.ajax({
+            dataType: "json",
+            url: 'data/geometries.json',
+            async: false,
+            success: function(data){
+
+                entities = data;
+
+                // get selection from layer selector and display the correct layer
+                _.each(_.values(entities['districts']), function (entity) { addPolygon(entity, "black", sourcePoints); });
+            }
+        });
+
+        createStatisticSelector();
 
         $("#layer-chooser > button.btn").on("click", function(){
+
+            $('#layer-chooser > button.btn').removeClass('active');
+            $(this).addClass("active");
 
             var layer = $(this).attr("id");
             sourcePoints.clearLayers();
@@ -142,37 +171,156 @@
                 var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
                     getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
 
-                var polygon = L.polygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
-                polygon.addTo(sourcePoints)
-                polygon.district = district;
-                polygon.on('click', displayPolygonInfo);
-            });
-
-        });
-
-        $.getJSON('data/geometries.json', function(data){
-
-            entities = data;
-
-            // get selection from layer selector and display the correct layer
-            _.each(_.values(entities['federalStates']), function (district) {
-
-                var color = typeof district.kinderGarten === 'undefined' ? getRandomColor() : 
-                    getColorLuminance('00FF4C', 0 - (1 - (district.kinderGarten)));
-
-                var polygon = L.multiPolygon(district.sgeo, {stroke: false, fillColor: color, fillOpacity: 1.0});
-                polygon.addTo(sourcePoints);
-                polygon.district = district;
-                polygon.on('click', displayPolygonInfo);
+                addPolygon(district, "black", sourcePoints);
             });
         });
 
-        function displayPolygonInfo() {
+        $("#start").on("click", function(){
 
-            $('#info').html(getPopupHtml(this.district));
+            // reset error message
+            $("#error-message").addClass("hide");
+            var layer = $('#layer-chooser > .active').attr("id")
+
+            var minMax   = getMinMax(layer, $('#primary-statistic').val(), $('#primary-statistic-measure').val(), 
+                                            $('#secondary-statistic').val(), $('#secondary-statistic-measure').val());
+
+            if ( minMax ) {
+
+                sourcePoints.clearLayers();
+
+                _.each(entities[layer], function(entity){
+
+                    var colorPercentage = (entity.value - minMax.min) / (minMax.max - minMax.min);
+                    var color = getColorLuminance('00FF4C', 0 - (1 - (colorPercentage)));
+
+                    // if a entity has no value, then we display it in a different color
+                    entity.disqualified ? addPolygon(entity, "yellow", sourcePoints) : addPolygon(entity, color, sourcePoints);
+                });
+
+                // update the result page with a cool table
+                $('#results').html(_.template($('#result-table').html(), { entities: entities[layer], 
+                    primary : $('#primary-statistic-measure').val(),
+                    secondary : $('#secondary-statistic-measure').val()}));
+
+                $.bootstrapSortable();
+                $('#nav-button-result').click();
+                $('#result-table tr').click(function() {
+            
+                    var uri = $(this).attr("id").replace("tr-", "");
+                    displayPolygonInfo(_.where( entities[layer], {uri:uri})[0]);
+                });
+                $('#result-table tr').hover(function() {
+                
+                    currentEntity.clearLayers();
+                    var uri = $(this).attr("id").replace("tr-", "");
+                    addPolygon(_.where( entities[layer], {uri:uri})[0], "red", currentEntity);
+                });
+            }
+        });
+
+        function getMinMax(layer, primaryStatistic, primaryMeasure, secondaryStatistic, secondaryMeasure) {
+
+            if ( primaryStatistic == "empty" ) {
+
+                error = "Bitte wähle eine primäre Statistik aus!";
+                $("#error-message").html(error);
+                $("#error-message").removeClass("hide");
+                return;
+            }
+
+            var min = 100000000;
+            var max = -2;
+
+            _.each(entities[layer], function(entity){
+
+                var primary   = entity.datacubes[primaryStatistic].values[primaryMeasure];
+
+                if ( secondaryStatistic != "empty" ) 
+                    var secondary = entity.datacubes[secondaryStatistic].values[secondaryMeasure];
+
+                if ( primary == "." || secondary == "." ) entity.disqualified = true;
+                else {
+                    
+                    if ( secondaryStatistic != "empty" ) {
+
+                        entity.value  = primary / secondary;
+                        entity.secondary = secondary;
+                    }
+                    else {
+                        entity.value  = primary;
+                        entity.secondary = "—";
+                    }
+
+                    entity.primary = primary;
+
+                    min = Math.min(min, entity.value);
+                    max = Math.max(max, entity.value);
+                }
+            });
+
+            return { min : min, max : max };
+        }
+
+        function addPolygon(entity, color, layer) {
+
+            var polygon = L.multiPolygon(entity.sgeo, {stroke: true, color : "red", weight : 1, fillColor: color, fillOpacity: 1.0});
+            polygon.addTo(layer);
+            polygon.district = entity;
+            polygon.on('click', displayPolygonInfo);
+        }
+
+        function displayPolygonInfo(entity) {
+
+            $('#info').html(getPopupHtml(entity));
             $('#nav-button-info').click();
         }
     });
+
+    function createStatisticSelector() {
+
+        var cubes = entities.districts[0].datacubes;
+        
+        // find all available data cubes
+        var data = [];
+        data.push({label: "Nichts ausgewählt", value: "empty", data : [{label: "Nichts ausgewählt", value: "empty"}]});
+
+        _.each(cubes, function(cube, index){ 
+
+            var dc = {label: cube.name, value: cube.uri, data : []};
+            _.each(_.keys(cube.values), function(measure){
+                dc.data.push({label: measure.replace("http://geostats.aksw.org/qb/", ""), value: measure})
+            });
+
+            data.push(dc); 
+        });
+
+        // $('#primary-statistic').multiselect('dataprovider', data);
+        $('#primary-statistic').multiselect({
+            
+            // update the measure for the chosen datacube
+            onChange: function(element, checked) {
+
+                // set the data
+                $('#primary-statistic-measure').multiselect('dataprovider', _.where(data, { value: element.val() })[0].data);
+            }
+        });
+        $('#primary-statistic').multiselect('dataprovider', data);
+        $('#primary-statistic-measure').multiselect('dataprovider', [{label: "Nichts ausgewählt", value: "empty"}]);
+
+        
+        // $('#primary-statistic').multiselect('dataprovider', data);
+        $('#secondary-statistic').multiselect({
+            
+            // update the measure for the chosen datacube
+            onChange: function(element, checked) {
+
+                // set the data
+                $('#secondary-statistic-measure').multiselect('dataprovider', _.where(data, { value: element.val() })[0].data);
+            }
+        });
+        $('#secondary-statistic').multiselect('dataprovider', data);
+        $('#secondary-statistic-measure').multiselect('dataprovider', [{label: "Nichts ausgewählt", value: "empty"}]);
+    }
 
     function getColorLuminance(hex, lum) {
 

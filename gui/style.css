@@ -12,6 +12,12 @@ body {
     padding: 20px;
 }
 
+.tab-content {
+
+    height: 90%;
+    width: 100%;
+}
+
 #map {
 
     float: left;

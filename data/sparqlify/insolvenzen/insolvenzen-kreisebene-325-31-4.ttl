@@ -5802,7 +5802,7 @@ gs-qb:vorraussichtlicheForderungenSpec
 gs-qb:GeoStatsInsolvenzen
       a       qb:DataSet ;
       rdfs:comment "This data set was created from the data given by http://regionalstatistik.de. Alle Länder: Eventuelle Abweichungen zu anderen Veröffentlichungen ergeben sich durch nachträgliche Korrekturen; diese sind auch nicht in das Bundesergebnis eingeflossen; In den Ergebnissen der einzelnen Bundesländer können Unternehmen enthalten sein, die ihren Sitz nicht im Nachweisland haben, aber deren Insolvenzabwicklung im Nachweisland erfolgt. Berlin (2000): bezogen auf den Gebietsstand 01.01.2001 Hessen (2004): Ergebnisse für das Land Hessen sowie den Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden. Berlin: Kreistabelle liegt auch für Bezirke vor. Baden-Württemberg: Berichtsjahr 1995-2010 Gebietsstand 01.01.1979; ab Berichtsjahr 2011 Gebietsstand 01.01.2011 Regierungsbezirk Darmstadt einschließlich nicht hessischer Insolvenzfälle, deren Verfahren in Hessen eröffnet oder mangels Masse abgewiesen wurden."@de ;
-      rdfs:label "Geostats Datacube Dataset"@de ;
+      rdfs:label "Insolvenzen@de"@de ;
       dct:issued "2014-03-02"^^xsd:date ;
       dct:publisher <http://semanticweb.org/id/AKSW> ;
       dct:subject <http://purl.org/linked-data/sdmx/2009/subject#3.2> ;

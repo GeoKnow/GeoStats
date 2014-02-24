@@ -163,40 +163,4 @@ public class NutsLoader extends DefaultShapeFileLoader {
 		
 		return idToLabels;
 	}
-	
-//	DE40
-//	DED4
-//	DED5
-//	DE401
-//	DE402
-//	DE403
-//	DE404
-//	DE405
-//	DE406
-//	DE407
-//	DE408
-//	DE409
-//	DE40A
-//	DE40B
-//	DE40C
-//	DE40D
-//	DE40E
-//	DE40F
-//	DE40G
-//	DE40H
-//	DE40I
-//	DEA2D
-//	DED2C
-//	DED2D
-//	DED2E
-//	DED2F
-//	DED41
-//	DED42
-//	DED43
-//	DED44
-//	DED45
-//	DED51
-//	DED52
-//	DED53
-
 }

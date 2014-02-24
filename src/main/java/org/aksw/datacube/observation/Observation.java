@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.aksw.datacube.Resource;
+import org.aksw.datacube.AbstractResource;
 import org.aksw.datacube.property.DimensionProperty;
 import org.aksw.datacube.property.MeasureProperty;
 import org.aksw.datacube.spec.DimensionComponentSpecification;
 
-public class Observation implements Resource {
+import com.hp.hpl.jena.rdf.model.Resource;
+
+public class Observation extends AbstractResource {
 
 	private List<DimensionProperty> dimensions;
 	private Map<MeasureProperty, ObservationValue> values;
@@ -18,8 +20,8 @@ public class Observation implements Resource {
 	/**
 	 * 
 	 */
-	public Observation() {
-		
+	public Observation(Resource resource) {
+		super(resource);
 		this.dimensions = new ArrayList<>();
 		this.values = new HashMap<>();
 	}
@@ -66,12 +68,6 @@ public class Observation implements Resource {
 		this.values.put(property, value);
 	}
 
-	@Override
-	public String getUri() {
-		// TODO Auto-generated method stub
-		return "NOT YET IMPLEMENTED";
-	}
-	
 	/**
 	 * 
 	 * @param dimensionSpecifications

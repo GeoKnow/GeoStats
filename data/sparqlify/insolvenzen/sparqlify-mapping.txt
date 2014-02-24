@@ -22,7 +22,7 @@ Create View Template Insolvenzen
   
     gs-qb:GeoStatsInsolvenzen a qb:DataSet ;
         qb:structure gs-qb:GeoStatsInsolvenzenStructure ;
-        rdfs:label "Geostats Datacube Dataset"@de ;
+        rdfs:label "Insolvenzen@de"@de ;
         dct:publisher <http://semanticweb.org/id/AKSW> ;
         dct:issued "2014-03-02"^^xsd:date ;
         dct:subject sdmx-subject:3.2 ;

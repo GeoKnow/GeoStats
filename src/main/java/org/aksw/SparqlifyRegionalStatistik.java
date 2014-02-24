@@ -3,12 +3,15 @@
  */
 package org.aksw;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -61,26 +64,71 @@ public class SparqlifyRegionalStatistik {
 		csvConfig.setFieldDelimiter(null);
 		csvConfig.setFieldSeparator(";".charAt(0));
 		csvConfig.setEscapeCharacter("\\".charAt(0));
-
-		Resource csv = new FileSystemResource("data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.csv");
-		InputSupplier<Reader> readerSupplier = new InputSupplierResourceReader(csv);
-		InputSupplier<CSVReader> csvReaderSupplier = new InputSupplierCSVReader(readerSupplier, csvConfig);
-		ResultSet rs = CsvMapperCliMain.createResultSetFromCsv(csvReaderSupplier, firstRowAsColumnHeaders, 100);
-
-		Resource mapping = new FileSystemResource("data/sparqlify/insolvenzen/sparqlify-mapping.txt");
-		InputStream mappingIn = mapping.getInputStream();
-		LoggerCount loggerCount = new LoggerCount(logger);
-		TemplateConfig tc = CsvMapperCliMain.readTemplateConfig(mappingIn, loggerCount);
-
-		Map<String, NamedViewTemplateDefinition> viewIndex = CsvMapperCliMain.indexViews(tc.getDefinitions(), loggerCount);
-		ViewTemplateDefinition view = CsvMapperCliMain.pickView(viewIndex, null);
-
-		TripleIteratorTracking it = CsvMapperCliMain.createTripleIterator(rs, view);
-		Model model = RdfExport.getModelFromConfiguration("");
-		while (it.hasNext() ) { model.add(model.asStatement(it.next())); }
 		
-		RdfExport.write(model, "data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.ttl");
-//		SparqlFormatterUtils.writeText(System.out, it);
+		String root = "data/sparqlify/";
+		for ( String directory : getDataCubes(root) ) {
+			
+			String data		= "/" + getDataFile(root + directory);
+			String mapping	= "/" + getConfigFile(root + directory);
+			
+			System.out.println(root + directory + data);
+			
+			Resource csv = new FileSystemResource(root + directory + data);
+			InputSupplier<Reader> readerSupplier = new InputSupplierResourceReader(csv);
+			InputSupplier<CSVReader> csvReaderSupplier = new InputSupplierCSVReader(readerSupplier, csvConfig);
+			ResultSet rs = CsvMapperCliMain.createResultSetFromCsv(csvReaderSupplier, firstRowAsColumnHeaders, 100);
+
+			System.out.println(root + directory + mapping);
+			
+			Resource sparqlifyMapping = new FileSystemResource(root + directory + mapping);
+			InputStream mappingIn = sparqlifyMapping.getInputStream();
+			LoggerCount loggerCount = new LoggerCount(logger);
+			TemplateConfig tc = CsvMapperCliMain.readTemplateConfig(mappingIn, loggerCount);
+
+			Map<String, NamedViewTemplateDefinition> viewIndex = CsvMapperCliMain.indexViews(tc.getDefinitions(), loggerCount);
+			ViewTemplateDefinition view = CsvMapperCliMain.pickView(viewIndex, null);
+
+			TripleIteratorTracking it = CsvMapperCliMain.createTripleIterator(rs, view);
+			Model model = RdfExport.getModelFromConfiguration("");
+			while (it.hasNext() ) { model.add(model.asStatement(it.next())); }
+			
+			RdfExport.write(model, root + directory + data.replace(".csv", ".ttl"));
+		}
+	}
+
+	private static String[] getDataCubes(String root) {
+		File file = new File(root);
+		String[] directories = file.list(new FilenameFilter() {
+		  @Override
+		  public boolean accept(File current, String name) {
+		    return new File(current, name).isDirectory();
+		  }
+		});
+		return directories;
+	}
+
+	private static String getConfigFile(String root) {
+		
+		File file = new File(root);
+		String[] directories = file.list(new FilenameFilter() {
+		  @Override
+		  public boolean accept(File current, String name) {
+		    return name.equals("sparqlify-mapping.txt");
+		  }
+		});
+		return directories[0];
+	}
+
+	private static String getDataFile(String root) {
+		
+		File file = new File(root);
+		String[] directories = file.list(new FilenameFilter() {
+		  @Override
+		  public boolean accept(File current, String name) {
+		    return name.endsWith(".csv");
+		  }
+		});
+		return directories[0];
 	}
 
 	static class InputSupplierResourceStream implements InputSupplier<InputStream> {

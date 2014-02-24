@@ -1,0 +1,60 @@
+<div class="container-fluid" style="margin-top: -20px;">
+    <div class="container-fluid" style="margin-top: 20px;" ng-show="info">
+        Klicke auf die Überschrift im Popup eines Polygon um genauer Information anzuzeigen!
+    </div>
+    <div ng-show="entity">
+        <h1><a href='{{ entity.uri }}'> {{ entity.label.de }} </a></h1>
+        <div>
+            <img class='district-image' src='{{ entity.image }}'/>
+            <p class="lead"> {{ entity.abstract.de }} </p>
+            <div style='clear: both;'/>
+            <table class='table table-striped'>
+                <tr>
+                    <td>Bürgermeister</td>
+                    <td>
+                        <table class='table table-striped'>
+                            <tr>
+                                <td>Name</td>
+                                <td><a href='{{ entity.leader.uri }}'>{{ entity.leader.label.de }}</a></td>
+                            </tr>
+                            <tr>
+                                <td>Portrait</td>
+                                <td><img class='leader-image' src='{{ entity.leader.image }}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Geburtstag</td>
+                                <td>{{ entity.leader.birthDate }}</td>
+                            </tr>
+                            <tr>
+                                <td>Geburtsort</td>
+                                <td>{{ entity.leader.birthPlace }}</td>
+                            </tr>
+                            <tr>
+                                <td>Partei</td>
+                                <td>
+                                    <a href='{{ entity.leader.party.uri }}'>{{entity.leader.party.label.de}}</a><br/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Homepage</td>
+                    <td><a href='{{ entity.homepage }}'>{{ entity.homepage }}</a></td>
+                </tr>
+                <tr>
+                    <td>Fläche</td>
+                    <td>{{ entity.area }}</td>
+                </tr>
+                <tr>   
+                    <td>Bevölkerung</td>
+                    <td>{{ entity.population }}</td>
+                </tr>
+                <tr>   
+                    <td>Höhe</td>
+                    <td>{{ entity.elevation }}</td>
+                </tr>
+            </table> 
+        </div>    
+    </div>
+</div>

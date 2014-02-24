@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aksw.Constants;
+import org.aksw.datacube.AbstractResource;
 import org.aksw.datacube.Language;
-import org.aksw.datacube.Resource;
 
-public class ComponentProperty implements Resource {
+import com.hp.hpl.jena.rdf.model.Resource;
+
+public class ComponentProperty extends AbstractResource {
 
 	protected Map<Language, String> labels;
 	protected String superProperty;
@@ -19,8 +21,8 @@ public class ComponentProperty implements Resource {
 	 * 
 	 * @param name
 	 */
-	public ComponentProperty(String name){
-		this.name = name;
+	public ComponentProperty(Resource resource){
+		super(resource);
 		this.labels = new HashMap<>();
 	}
 
@@ -84,16 +86,9 @@ public class ComponentProperty implements Resource {
 	 * @return the name
 	 */
 	public String getName() {
-		return name;
+		return this.resource.getLocalName();
 	}
 
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	/**
 	 * 
 	 * @param label
@@ -101,11 +96,5 @@ public class ComponentProperty implements Resource {
 	 */
 	public void addLabel(String label, Language language) {
 		this.labels.put(language, label);
-	}
-
-	@Override
-	public String getUri() {
-		
-		return Constants.GEOSTATS_DATA_CUBE_NS + this.name;
 	}
 }
