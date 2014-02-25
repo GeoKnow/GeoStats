@@ -1,0 +1,36 @@
+<div class="container-fluid">
+    <div id="error-message" class='alert alert-danger hide'></div>
+    <div style="margin-bottom: 20px;">
+        <h4>SPARQL-Endpunkt:</h4>
+        <input type="text" class="form-control" ng-model="sparqlEndpoint" placeholder="Bitte SPARQL-Endpunkt angeben!">
+        <h4>Graph URI:</h4>
+        <input type="text" class="form-control" ng-model="graph" placeholder="Bitte Graph angeben!">
+    </div>
+    <div style="margin-bottom: 20px;">
+        <h4>Administrative Ebene wählen:</h4>
+        <div class="btn-group">
+            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'federalStates'">Bundesländer</button>
+            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'adminstrativeDistricts'">Regierungsbezirke</button>
+            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'districts'">Kreise und kreisfreie Städte</button>
+        </div>
+    </div>
+    <div stlye="clear:both;"></div>
+    <div class="statistic">
+        <h4>Primäre Statistik auswählen:</h4>
+        <multiselect ng-model="primaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
+        <h4 style="padding-top: 10px;">Maß für Primäre Statistik auswählen:</h4>
+        <multiselect ng-model="primaryMeasure" options="c.label for c in primaryDataCube.measures" change="selected()"></multiselect>
+        </select>
+    </div>
+    <div class="statistic">
+        <h4>Sekundäre Statistik auswählen:</h4>
+        <multiselect ng-model="secondaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
+        <h4 style="padding-top: 10px;">Maß für Sekundäre Statistik auswählen:</h4>
+        <multiselect ng-model="secondaryMeasure" options="c.label for c in secondaryDataCube.measures" change="selected()"></multiselect>
+        </select>
+        <div style="clear:both;"></div>
+    </div>
+    <a href="#result?l={{layer}}&sep={{sparqlEndpoint}}&g={{graph}}&pdq={{primaryDataCube.uri}}&pm={{primaryMeasure.uri}}&sdq={{secondaryDataCube.uri}}&sm={{secondaryMeasure.uri}}">
+        <button style="margin-top: 25px;" type="button" class="btn btn-success" id="start">Visualisierung</button>
+    </a>
+</div>
