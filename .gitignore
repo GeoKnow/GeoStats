@@ -6,3 +6,5 @@ cache
 *.war
 *.ear
 ng-gui/node_modules
+data/tmp
+geostats.log

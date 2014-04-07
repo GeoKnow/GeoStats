@@ -58,6 +58,11 @@ public class SparqlifyRegionalStatistik {
 	 */
 	public static void main(String[] args) throws IOException, RecognitionException {
 
+		run();
+	}
+	
+	public static void run() throws IOException, RecognitionException{
+		
 		CsvParserConfig csvConfig = new CsvParserConfig();
 		boolean firstRowAsColumnHeaders = true;
 		csvConfig.setFieldDelimiter(null);

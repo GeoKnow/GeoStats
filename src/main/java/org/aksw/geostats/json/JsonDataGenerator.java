@@ -24,6 +24,8 @@ import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
 import org.aksw.jena_sparql_api.cache.extra.CacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontendImpl;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.apache.commons.io.FileUtils;
@@ -85,12 +87,12 @@ public class JsonDataGenerator {
 		
 		Model data = FileManager.get().loadModel("data/geostats.ttl", "TURTLE");
 		QueryExecutionFactory sparql = new QueryExecutionFactoryModel(data);
-		CacheEx cache = new CacheExImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false));
+		CacheFrontend cache = new CacheFrontendImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false));
 		qef = new QueryExecutionFactoryCacheEx(sparql, cache);
 		
 		JSONObject json = new JSONObject();
 		json.put("districts", new JSONArray());
-		json.put("adminstrativeDistricts", new JSONArray());
+		json.put("administrativeDistricts", new JSONArray());
 		json.put("federalStates", new JSONArray());
 		
 		// getting all districts
@@ -99,11 +101,11 @@ public class JsonDataGenerator {
 		getFederalStates(json);
 		
         String output = json.toString(); 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonElement je = new JsonParser().parse(json.toString());
-		output = gson.toJson(je);
-        
-        FileUtils.write(new File("/Users/gerb/Development/workspaces/java/geostats/gui/data/geometries.json"), output , "UTF-8");
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//		JsonElement je = new JsonParser().parse(json.toString());
+//		output = gson.toJson(je);
+//        
+        FileUtils.write(new File("geostats-angular/app/data/geometries.json"), output , "UTF-8");
 	}
 	
 	private static void getFederalStates(JSONObject json) throws ParseException, JSONException {
@@ -130,7 +132,6 @@ public class JsonDataGenerator {
         	done.add(uri);
         	
         	String label		 = getLabel(uri);
-        	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
         	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());	
@@ -156,8 +157,6 @@ public class JsonDataGenerator {
         	area.put("label", label);
         	area.put("comment", comment);
         	area.put("img", img);
-        	area.put("url", url);
-//        	area.put("datacubes", getDataCubes(regionID));
         	
         	json.getJSONArray("federalStates").put(area);
         }
@@ -207,7 +206,6 @@ public class JsonDataGenerator {
         	done.add(uri);
         	
         	String label		 = getLabel(uri);
-        	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
         	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());		
@@ -233,18 +231,20 @@ public class JsonDataGenerator {
         	area.put("label", label);
         	area.put("comment", comment);
         	area.put("img", img);
-        	area.put("url", url);
-//        	area.put("datacubes", getDataCubes(regionID));
         	
-        	json.getJSONArray("adminstrativeDistricts").put(area);
+        	json.getJSONArray("administrativeDistricts").put(area);
         }
 	}
 
 	private static void getDistricts(JSONObject json) throws ParseException, JSONException {
 		
-		QueryExecution qExec = qef.createQueryExecution(query.replace("RDF:TYPE", "http://dbpedia.org/ontology/District")); 
+		QueryExecution qExec = qef.createQueryExecution(query.replace("RDF:TYPE", "http://dbpedia.org/ontology/District"));
+		System.out.println(query.replace("RDF:TYPE", "http://dbpedia.org/ontology/District"));
 		ResultSet rs = qExec.execSelect();
 		Set<String> done = new HashSet<>();
+		
+//		ResultSetFormatter.out(rs);
+//		System.exit(0);
 		
 		int i = 1;
         while (rs.hasNext()) {
@@ -260,15 +260,12 @@ public class JsonDataGenerator {
         	done.add(uri);
         	
         	System.out.println("DIS: " + i++ + "  -> " + uri);
-        	
         	String label		 = getLabel(uri);
-        	String url		 	 = getUrl(uri);
         	String comment		 = getComment(uri);
         	String img		 	 = getImage(uri);
-        	List<Geometry> geos  = getGeometries(result.get("s").asResource().getURI());	
         	
         	JSONArray multipolygon = new JSONArray();
-        	for ( Geometry geo : geos ) {
+        	for ( Geometry geo : getGeometries(result.get("s").asResource().getURI()) ) {
         		
         		JSONArray points = new JSONArray();
         		for ( Coordinate p : geo.getCoordinates()) {
@@ -284,12 +281,10 @@ public class JsonDataGenerator {
         	// some uris appear more then once (if they consist of multipolygons)
         	JSONObject area = new JSONObject();
         	area.put("uri", uri);
-        	area.put("url", url);
         	area.put("sgeo", multipolygon);
         	area.put("label", label);
         	area.put("comment", comment);
         	area.put("img", img);
-//        	area.put("datacubes", getDataCubes(regionID));
         	
         	json.getJSONArray("districts").put(area);
         }
@@ -320,32 +315,32 @@ public class JsonDataGenerator {
 //		
 //		return datasetsJson;
 //	}
-
-	/**
-	 * 
-	 * @param uri
-	 * @return
-	 */
-	private static String getKindergartenCount(String uri) {
-		
-		Integer maxCount = Integer.MIN_VALUE;
-		Map<String,Integer> maxCounts = new HashMap<>();
-		if ( !maxCounts.containsKey("numberOfKindergarten") ) {
-			
-			ResultSet rs = qef.createQueryExecution(QueryFactory.create("SELECT MAX(?kindergartenCount) { ?s <http://geostats.aksw.org/numberOfKindergarten> ?kindergartenCount }", Syntax.syntaxARQ)).execSelect();
-			while ( rs.hasNext()) maxCount = rs.next().get("callret-0").asLiteral().getInt();
-			maxCounts.put("numberOfKindergarten", maxCount);
-		}
-		maxCount = maxCounts.get("numberOfKindergarten");
-		
-		ResultSet rs = qef.createQueryExecution(String.format("SELECT ?kindergartenCount { <%s> <http://geostats.aksw.org/numberOfKindergarten> ?kindergartenCount }", uri)).execSelect();
-		while ( rs.hasNext()) return String.format("%.4f", rs.next().get("kindergartenCount").asLiteral().getInt() / (double) maxCount).replace(",", ".");
-		
-		System.out.println("No kindergarten count for uri: " + uri);
-		
-		return "0.0";
-	}
-
+//
+//	/**
+//	 * 
+//	 * @param uri
+//	 * @return
+//	 */
+//	private static String getKindergartenCount(String uri) {
+//		
+//		Integer maxCount = Integer.MIN_VALUE;
+//		Map<String,Integer> maxCounts = new HashMap<>();
+//		if ( !maxCounts.containsKey("numberOfKindergarten") ) {
+//			
+//			ResultSet rs = qef.createQueryExecution(QueryFactory.create("SELECT MAX(?kindergartenCount) { ?s <http://geostats.aksw.org/numberOfKindergarten> ?kindergartenCount }", Syntax.syntaxARQ)).execSelect();
+//			while ( rs.hasNext()) maxCount = rs.next().get("callret-0").asLiteral().getInt();
+//			maxCounts.put("numberOfKindergarten", maxCount);
+//		}
+//		maxCount = maxCounts.get("numberOfKindergarten");
+//		
+//		ResultSet rs = qef.createQueryExecution(String.format("SELECT ?kindergartenCount { <%s> <http://geostats.aksw.org/numberOfKindergarten> ?kindergartenCount }", uri)).execSelect();
+//		while ( rs.hasNext()) return String.format("%.4f", rs.next().get("kindergartenCount").asLiteral().getInt() / (double) maxCount).replace(",", ".");
+//		
+//		System.out.println("No kindergarten count for uri: " + uri);
+//		
+//		return "0.0";
+//	}
+//
 	/**
 	 * 
 	 * @param uri
@@ -374,7 +369,7 @@ public class JsonDataGenerator {
 	 */
 	private static String getComment(String uri) {
 		
-		ResultSet rs = qef.createQueryExecution(String.format("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?comment { <%s> rdfs:comment ?comment }", uri)).execSelect();
+		ResultSet rs = qef.createQueryExecution(String.format("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?comment { <%s> <http://dbpedia.org/ontology/abstract> ?comment . FILTER(lang(?comment) = 'de') }", uri)).execSelect();
 		while ( rs.hasNext()) return rs.next().get("comment").asLiteral().getLexicalForm();
 		
 		return "no comment";
@@ -387,7 +382,7 @@ public class JsonDataGenerator {
 	 */
 	private static String getLabel(String uri) {
 		
-		ResultSet rs = qef.createQueryExecution(String.format("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?label { <%s> rdfs:label ?label }", uri)).execSelect();
+		ResultSet rs = qef.createQueryExecution(String.format("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?label { <%s> rdfs:label ?label . FILTER(lang(?label) = 'de') }", uri)).execSelect();
 		while ( rs.hasNext()) return rs.next().get("label").asLiteral().getLexicalForm();
 		
 		return "no label";

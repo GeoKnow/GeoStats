@@ -1,0 +1,206 @@
+Prefix qb:              <http://purl.org/linked-data/cube#>
+Prefix gs-qb:           <http://geostats.aksw.org/qb/>  
+Prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+Prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#>
+Prefix owl:             <http://www.w3.org/2002/07/owl#>
+Prefix xsd:             <http://www.w3.org/2001/XMLSchema#>
+Prefix dct:             <http://purl.org/dc/terms/>
+Prefix sdmx-concept:    <http://purl.org/linked-data/sdmx/2009/concept#>
+Prefix sdmx-code:       <http://purl.org/linked-data/sdmx/2009/code#>
+Prefix sdmx-dimension:  <http://purl.org/linked-data/sdmx/2009/dimension#>
+Prefix sdmx-attribute:  <http://purl.org/linked-data/sdmx/2009/attribute#>
+Prefix sdmx-measure:    <http://purl.org/linked-data/sdmx/2009/measure#>
+Prefix admingeo:        <http://data.ordnancesurvey.co.uk/ontology/admingeo/> 
+Prefix sdmx-subject:    <http://purl.org/linked-data/sdmx/2009/subject#> 
+Prefix interval:        <http://reference.data.gov.uk/def/intervals/> 
+
+
+Create View Template Sozialhilfe 
+    As CONSTRUCT {
+
+    # -- Data Set --------------------------------------------
+  
+    gs-qb:GeoStatsSocialHelp a qb:DataSet ;
+        qb:structure gs-qb:GeoStatsSocialHelpStructure ;
+        rdfs:label "Statistik d. Empf. v.lfd. Hilfe z. Lebensunterhalt"@de ;
+        dct:publisher <http://semanticweb.org/id/AKSW> ;
+        dct:issued "2014-03-13"^^xsd:date ;
+        dct:subject sdmx-subject:3.2 ;
+        rdfs:comment "Hessen: Landessumme einschl. Landeswohlfahrtsverband\nBaden-Württemberg, Hessen (2005 - 2009): Empfänger nach dem Sitz des Trägers\nBerlin 2005: Umstellungsbedingte Untererfassung bei Empfängern/-innen in Einrichtungen zu 'Empfänger insgesamt':\nBremen (bis 2006): nur Empfänger außerhalb von Einrichtungen zu 'Empfänger weiblich':\nBremen (bis 2006): nur Empfänger außerhalb von Einrichtungen zu 'Empfänger Ausländer':\nBremen (bis 2006): nur Empfänger außerhalb von Einrichtungen zu 'Empfänger davon im Alter von ... bis unter ... Jahren':\nBremen (bis 2006): nur Empfänger außerhalb von Einrichtungen"@de .
+        
+        # -- Data structure definition ----------------------------
+        
+        gs-qb:GeoStatsSocialHelpStructure 
+            a qb:DataStructureDefinition;
+            qb:component gs-qb:refAreaSpec, gs-qb:refPeriodSpec, gs-qb:totalSocialHelpSpec, gs-qb:femaleSocialHelpMeasureSpec, 
+                gs-qb:foreignerSocialHelpMeasureSpec, gs-qb:outsideOfFacilitiesSocialHelpMeasureSpec, 
+                gs-qb:under7YearsSocialHelpMeasureSpec, gs-qb:between7And18YearsSocialHelpMeasureSpec, 
+                gs-qb:between18And25YearsSocialHelpMeasureSpec, gs-qb:between25And50YearsSocialHelpMeasureSpec, 
+                gs-qb:between50And65YearsSocialHelpMeasureSpec, gs-qb:over65YearsSocialHelpMeasureSpec .
+        
+        # The dimensions        
+        gs-qb:refAreaSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refArea ;
+            rdfs:label "Ort der Messung"@de .
+        
+        gs-qb:refPeriodSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refPeriod ;
+            rdfs:label "Zeit der Messung"@de .   
+    
+        # -- The measure(s) ------------------------------------ 
+
+        gs-qb:totalSocialHelpSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:totalSocialHelpMeasure .
+        
+        gs-qb:totalSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Insgesamt)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+            
+        gs-qb:femaleSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:femaleSocialHelpMeasure .
+            
+        gs-qb:femaleSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Weiblich)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int . 
+            
+        gs-qb:foreignerSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:foreignerSocialHelpMeasure .
+        
+        gs-qb:foreignerSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Ausländer)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int . 
+            
+        gs-qb:outsideOfFacilitiesSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:outsideOfFacilitiesSocialHelpMeasure .
+       
+        gs-qb:outsideOfFacilitiesSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Außerhalb von Einrichtungen)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:under7YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:under7YearsSocialHelpMeasure .
+            
+        gs-qb:under7YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Unter 7 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+            
+        gs-qb:between7And18YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:between7And18YearsSocialHelpMeasure .
+        
+        gs-qb:between7And18YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Zwischen 7 - 18 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+            
+        gs-qb:between18And25YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:between18And25YearsSocialHelpMeasure .
+            
+        gs-qb:between18And25YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Zwischen 18 - 25 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:between25And50YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:between25And50YearsSocialHelpMeasure .
+           
+        gs-qb:between25And50YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Zwischen 25 - 50 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:between50And65YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:between50And65YearsSocialHelpMeasure .
+            
+        gs-qb:between50And65YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Zwischen 50 - 65 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+            
+        gs-qb:over65YearsSocialHelpMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:over65YearsSocialHelpMeasure .
+            
+        gs-qb:over65YearsSocialHelpMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Empfänger(innen) von Sozialhilfe (Über 65 Jahre)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .
+        
+        # -- The attributes ------------------------------------ 
+           
+        gs-qb:measureSpec 
+            qb:attribute sdmx-attribute:unitMeasure; 
+            qb:componentRequired "true"^^xsd:boolean;
+            qb:componentAttachment qb:DataSet .
+
+        # -- Dimensions and measures  ----------------------------
+
+        gs-qb:refPeriod  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "Zeitraum"@de;
+            rdfs:subPropertyOf sdmx-dimension:refPeriod;
+            rdfs:range interval:Interval;
+            qb:concept sdmx-concept:refPeriod .
+            
+        gs-qb:refArea  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "Ort"@de;
+            rdfs:subPropertyOf sdmx-dimension:refArea;
+            rdfs:range admingeo:UnitaryAuthority;
+            qb:concept sdmx-concept:refArea .
+            
+        # -- Observations  ----------------------------
+        
+        ?observationUri
+          a qb:Observation ;
+          qb:dataSet gs-qb:GeoStatsSocialHelp ;
+          gs-qb:refArea ?areaUri ;
+          gs-qb:refPeriod ?refPeriod ;
+          gs-qb:totalSocialHelpMeasure ?totalSocialHelp ;
+          gs-qb:femaleSocialHelpMeasure ?femaleSocialHelp ;
+          gs-qb:foreignerSocialHelpMeasure ?foreignerSocialHelp ;
+          gs-qb:outsideOfFacilitiesSocialHelpMeasure ?outsideSocialHelp ;
+          gs-qb:under7YearsSocialHelpMeasure ?7SocialHelp ;
+          gs-qb:between7And18YearsSocialHelpMeasure ?718SocialHelp ;
+          gs-qb:between18And25YearsSocialHelpMeasure ?1825SocialHelp ;
+          gs-qb:between25And50YearsSocialHelpMeasure ?2550SocialHelp ;
+          gs-qb:between50And65YearsSocialHelpMeasure ?5065SocialHelp ;
+          gs-qb:over65YearsSocialHelpMeasure ?65SocialHelp ;
+  }
+  With
+      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/socialhelp/", ?1, "_", ?2))
+      ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?2))
+      ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?1))
+      ?totalSocialHelp = plainLiteral(?4)
+      ?femaleSocialHelp = plainLiteral(?5)
+      ?foreignerSocialHelp = plainLiteral(?6)
+      ?outsideSocialHelp = plainLiteral(?7)
+      ?7SocialHelp = plainLiteral(?8)
+      ?718SocialHelp = plainLiteral(?9)
+      ?1825SocialHelp = plainLiteral(?10)
+      ?2550SocialHelp = plainLiteral(?11)
+      ?5065SocialHelp = plainLiteral(?12)
+      ?65SocialHelp = plainLiteral(?13)
+      
+      

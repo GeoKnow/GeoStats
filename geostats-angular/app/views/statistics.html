@@ -1,36 +1,65 @@
 <div class="container-fluid">
-    <div id="error-message" class='alert alert-danger hide'></div>
-    <div style="margin-bottom: 20px;">
-        <h4>SPARQL-Endpunkt:</h4>
-        <input type="text" class="form-control" ng-model="sparqlEndpoint" placeholder="Bitte SPARQL-Endpunkt angeben!">
-        <h4>Graph URI:</h4>
-        <input type="text" class="form-control" ng-model="graph" placeholder="Bitte Graph angeben!">
+    <div class="container-fluid" style="margin-bottom: 20px;">
+        <div class="row">
+            <div class="col-md-5">
+                <h4>SPARQL-Endpunkt:</h4>
+                <input type="text" class="form-control" ng-model="sparqlEndpoint" placeholder="Bitte SPARQL-Endpunkt angeben!" >
+            </div>
+            <!-- <div class="col-md-1"></div> -->
+            <div class="col-md-4">
+                <h4>Graph URI:</h4>
+                <input type="text" class="form-control" ng-model="graph" placeholder="Bitte Graph angeben!">
+            </div>
+        </div>    
     </div>
-    <div style="margin-bottom: 20px;">
-        <h4>Administrative Ebene wählen:</h4>
-        <div class="btn-group">
-            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'federalStates'">Bundesländer</button>
-            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'adminstrativeDistricts'">Regierungsbezirke</button>
-            <button type="button" class="btn btn-default" ng-model="layer" btn-radio="'districts'">Kreise und kreisfreie Städte</button>
+    <div class="container-fluid" style="margin-bottom: 20px;">
+        <div class="row">
+            <div class="col-md-5">
+                <h4>Administrative Ebene wählen:</h4>
+                <select class="form-control" ng-model="layer" ng-options="layer.label for layer in layers"></select>
+            </div>
+            <div class="col-md-4">
+                <h4>Ergebnissgruppen:</h4>
+                <select class="form-control" ng-model="interval" ng-options="interval for interval in intervals"></select>
+            </div>
+            <div class="col-md-1">
+                <h4>Farbe:</h4>
+                <div colorpicker id="colorpicker" ng-model="color"></div>
+            </div>
         </div>
     </div>
-    <div stlye="clear:both;"></div>
-    <div class="statistic">
-        <h4>Primäre Statistik auswählen:</h4>
-        <multiselect ng-model="primaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
-        <h4 style="padding-top: 10px;">Maß für Primäre Statistik auswählen:</h4>
-        <multiselect ng-model="primaryMeasure" options="c.label for c in primaryDataCube.measures" change="selected()"></multiselect>
-        </select>
+    <div>
+        <fieldset class="container-fluid" style="margin-bottom: 15px;"> 
+            <legend>Primäre Statistik</legend>
+            <div class="row" style="padding-left: 15px;">
+                <div class="col-md-6">
+                    <h4>Primäre Statistik auswählen:</h4>
+                    <multiselect ng-model="primaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
+                </div>
+                <div class="col-md-6">
+                    <h4>Maß für Primäre Statistik auswählen:</h4>
+                    <multiselect ng-model="primaryMeasure" options="c.label for c in primaryDataCube.measures" change="selected()"></multiselect>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="container-fluid"> 
+            <legend>Sekundäre Statistik</legend>
+            <div class="row"  style="padding-left: 15px;">
+                <div class="col-md-6">
+                    <h4>Sekundäre Statistik auswählen:</h4>
+                    <multiselect ng-model="secondaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
+                </div>
+                <div class="col-md-6">
+                    <h4>Maß für Sekundäre Statistik auswählen:</h4>
+                    <multiselect ng-model="secondaryMeasure" options="c.label for c in secondaryDataCube.measures" change="selected()"></multiselect>
+                </div>
+            </div>
+        </fieldset>
     </div>
-    <div class="statistic">
-        <h4>Sekundäre Statistik auswählen:</h4>
-        <multiselect ng-model="secondaryDataCube" options="c.label for c in datacubes" change="selected()"></multiselect>
-        <h4 style="padding-top: 10px;">Maß für Sekundäre Statistik auswählen:</h4>
-        <multiselect ng-model="secondaryMeasure" options="c.label for c in secondaryDataCube.measures" change="selected()"></multiselect>
-        </select>
-        <div style="clear:both;"></div>
+    <div class="container-fluid">
+        <div class="alert alert-danger" style="margin-top:15px;" ng-show="error">{{error}}</div>
+        <a ng-click="generateVisualization()">
+            <button style="margin-top: 25px;" type="button" class="btn btn-success" id="start">Visualisierung</button>
+        </a>
     </div>
-    <a href="#result?l={{layer}}&sep={{sparqlEndpoint}}&g={{graph}}&pdq={{primaryDataCube.uri}}&pm={{primaryMeasure.uri}}&sdq={{secondaryDataCube.uri}}&sm={{secondaryMeasure.uri}}">
-        <button style="margin-top: 25px;" type="button" class="btn btn-success" id="start">Visualisierung</button>
-    </a>
 </div>

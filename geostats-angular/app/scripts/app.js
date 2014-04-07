@@ -6,7 +6,9 @@ var geostats = angular.module('geostatsAngularApp', [
 	  'ui.bootstrap',
 	  'leaflet-directive',
       'tableSort',
-      'ui.multiselect'
+      'ui.multiselect',
+      'truncate',
+      'colorpicker.module'
 	])
   	.config(function ($routeProvider) {
 		$routeProvider
@@ -26,7 +28,7 @@ var geostats = angular.module('geostatsAngularApp', [
                 templateUrl: 'views/statistics.html',
                 controller: 'StatisticsCtrl'
             })
-		  	.when('/statistic/:sparqlEndpoint/:graph/:layer/:primaryDataCube/:primaryStatistic/:secondaryDataCube/:secondaryStatistic', {
+		  	.when('/statistic/', {
 				templateUrl: 'views/statistics.html',
 				controller: 'StatisticsCtrl'
 		  	})

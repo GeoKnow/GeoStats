@@ -1,0 +1,182 @@
+Prefix qb:              <http://purl.org/linked-data/cube#>
+Prefix gs-qb:           <http://geostats.aksw.org/qb/>  
+Prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+Prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#>
+Prefix owl:             <http://www.w3.org/2002/07/owl#>
+Prefix xsd:             <http://www.w3.org/2001/XMLSchema#>
+Prefix dct:             <http://purl.org/dc/terms/>
+Prefix sdmx-concept:    <http://purl.org/linked-data/sdmx/2009/concept#>
+Prefix sdmx-code:       <http://purl.org/linked-data/sdmx/2009/code#>
+Prefix sdmx-dimension:  <http://purl.org/linked-data/sdmx/2009/dimension#>
+Prefix sdmx-attribute:  <http://purl.org/linked-data/sdmx/2009/attribute#>
+Prefix sdmx-measure:    <http://purl.org/linked-data/sdmx/2009/measure#>
+Prefix admingeo:        <http://data.ordnancesurvey.co.uk/ontology/admingeo/> 
+Prefix sdmx-subject:    <http://purl.org/linked-data/sdmx/2009/subject#> 
+Prefix interval:        <http://reference.data.gov.uk/def/intervals/> 
+
+
+Create View Template Sozialhilfe 
+    As CONSTRUCT {
+
+    # -- Data Set --------------------------------------------
+  
+    gs-qb:GeoStatsDebt a qb:DataSet ;
+        qb:structure gs-qb:GeoStatsDebtStructure ;
+        rdfs:label "Schuldenstand der Kernhaushalte der Gemeinden und Gemeindeverbände"@de ;
+        dct:publisher <http://semanticweb.org/id/AKSW> ;
+        dct:issued "2014-03-14"^^xsd:date ;
+        dct:subject sdmx-subject:3.2 ;
+        rdfs:comment "Hamburg, Bremen, Berlin: Tabelle liegt nicht vor.\nBaden-Württemberg: Berichtsjahr 2010 Gebietsstand 01.01.2009; ab Berichtsjahr 2011 Gebietsstand 01.01.2011\nBayern: ohne Bezirke; Abweichungen zu anderen Veröffentlichungen ergeben sich ggf. durch nachträgliche Bestandskorrekturen; diese sind auch nicht in das Bundesergebnis eingeflossen;\nHessen: Kreistabelle liegt auch für Gemeinden vor\nNordrhein-Westfalen: Landesergebnis einschließlich der Landschaftsverbände Rheinland und Westfalen-Lippe sowie dem Regionalverband Ruhr. Abweichungen zu anderen Veröffentlichungen ergeben sich ggf. durch nachträgliche Bestandskorrekturen; diese sind auch nicht in das Bundesergebnis eingeflossen.\nHessen: Landessumme einschließlich des Landeswohlfahrtsverbands\nRheinland-Pfalz: Landesergebnis einschließlich Bezirksverband Pfalz.\nSachsen: Landessumme einschließlich des Kommunalen Sozialverbandes Sachsen; Kreissummen einschließlich der Haushalte der Verwaltungsverbände."@de .
+        
+        # -- Data structure definition ----------------------------
+        
+        gs-qb:GeoStatsDebtStructure 
+            a qb:DataStructureDefinition;
+            qb:component gs-qb:refAreaSpec, gs-qb:refPeriodSpec, gs-qb:perHeadDebtMeasureSpec, gs-qb:totalDebtMeasureSpec, gs-qb:securityNonPublicDebtMeasureSpec, gs-qb:creditNonPublicDebtMeasureSpec, gs-qb:checkoutCreditNonPublicDebtMeasureSpec, gs-qb:creditPublicDebtMeasureSpec, gs-qb:checkoutCreditPublicDebtMeasureSpec .
+        
+        # The dimensions        
+        gs-qb:refAreaSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refArea ;
+            rdfs:label "Ort der Messung"@de .
+        
+        gs-qb:refPeriodSpec a qb:ComponentSpecification ;
+            qb:dimension gs-qb:refPeriod ;
+            rdfs:label "Zeit der Messung"@de .   
+    
+        # -- The measure(s) ------------------------------------ 
+
+        # -- 1 ------------------------------------ 
+
+        gs-qb:perHeadDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:perHeadDebtMeasure .
+        
+        gs-qb:perHeadDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Schuldenst.d.Kernhh.d.Gem.u.-verb.je Einw.a.30.06. (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int . 
+
+        # -- 2 ------------------------------------ 
+
+        gs-qb:totalDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:totalDebtMeasure .
+        
+        gs-qb:totalDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Schuldenst d.Kernhh.d.Gem.u.-verbände insgesamt (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+
+        # -- 3 ------------------------------------ 
+
+        gs-qb:securityNonPublicDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:securityNonPublicDebtMeasure .
+        
+        gs-qb:securityNonPublicDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Wertpapierschulden im nicht-öffentlichen Bereich (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+
+        # -- 4 ------------------------------------ 
+
+        gs-qb:creditNonPublicDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:creditNonPublicDebtMeasure .
+        
+        gs-qb:creditNonPublicDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Kredite im nicht-öffentlichen Bereich (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+
+        # -- 5 ------------------------------------ 
+
+        gs-qb:checkoutCreditNonPublicDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:checkoutCreditNonPublicDebtMeasure .
+        
+        gs-qb:checkoutCreditNonPublicDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Kassenkredite im nicht-öffentlichen Bereich (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+
+        # -- 6 ------------------------------------ 
+
+        gs-qb:creditPublicDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:creditPublicDebtMeasure .
+        
+        gs-qb:creditPublicDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Kredite im öffentlichen Bereich (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+
+        # -- 7 ------------------------------------ 
+
+        gs-qb:checkoutCreditPublicDebtMeasureSpec 
+            a           qb:ComponentSpecification ;
+            qb:measure  gs-qb:checkoutCreditPublicDebtMeasure .
+        
+        gs-qb:checkoutCreditPublicDebtMeasure 
+            a rdf:Property, qb:MeasureProperty ;
+            rdfs:label "Kassenkredite im öffentlichen Bereich (EUR)"@de;
+            rdfs:subPropertyOf sdmx-measure:obsValue;
+            rdfs:range xsd:int .  
+            
+        
+        # -- The attributes ------------------------------------ 
+           
+        gs-qb:measureSpec 
+            qb:attribute sdmx-attribute:unitMeasure; 
+            qb:componentRequired "true"^^xsd:boolean;
+            qb:componentAttachment qb:DataSet .
+
+        # -- Dimensions and measures  ----------------------------
+
+        gs-qb:refPeriod  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "Zeitraum"@de;
+            rdfs:subPropertyOf sdmx-dimension:refPeriod;
+            rdfs:range interval:Interval;
+            qb:concept sdmx-concept:refPeriod .
+            
+        gs-qb:refArea  a rdf:Property, qb:DimensionProperty;
+            rdfs:label "Ort"@de;
+            rdfs:subPropertyOf sdmx-dimension:refArea;
+            rdfs:range admingeo:UnitaryAuthority;
+            qb:concept sdmx-concept:refArea .
+            
+        # -- Observations  ----------------------------
+        
+        ?observationUri
+          a qb:Observation ;
+          qb:dataSet gs-qb:GeoStatsDebt ;
+          gs-qb:refArea ?areaUri ;
+          gs-qb:refPeriod ?refPeriod ;
+          gs-qb:perHeadDebtMeasure ?perHead ;
+          gs-qb:totalDebtMeasure ?totalDebtMeasure ;
+          gs-qb:securityNonPublicDebtMeasure ?securityNonPublicDebtMeasure ;
+          gs-qb:creditNonPublicDebtMeasure ?creditNonPublicDebtMeasure ;
+          gs-qb:checkoutCreditNonPublicDebtMeasure ?checkoutCreditNonPublicDebtMeasure ;
+          gs-qb:creditPublicDebtMeasure ?creditPublicDebtMeasure ;
+          gs-qb:checkoutCreditPublicDebtMeasure ?checkoutCreditPublicDebtMeasure ;
+  }
+  With
+      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/debt/", ?1, "_", ?2))
+      ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?2))
+      ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?1))
+      ?perHead = plainLiteral(?4)
+      ?totalDebtMeasure = plainLiteral(?5)
+      ?securityNonPublicDebtMeasure = plainLiteral(?6)
+      ?creditNonPublicDebtMeasure = plainLiteral(?7)
+      ?checkoutCreditNonPublicDebtMeasure = plainLiteral(?8)
+      ?creditPublicDebtMeasure = plainLiteral(?9)
+      ?checkoutCreditPublicDebtMeasure = plainLiteral(?10)
+      
+      
+      

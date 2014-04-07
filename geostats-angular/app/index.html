@@ -9,6 +9,10 @@
 		<title></title>
 		<meta name="description" content="">
 		<meta name="viewport" content="width=device-width">
+        <meta property="og:url" content="http://geostats.aksw.org/" />
+        <meta property="og:image" content="http://geostats.aksw.org/images/maleInTotal.png" />
+        <meta property="og:title" content="Visualisierung von verlinkten RDF Data Cubes auf Karten" />
+<!--         <meta property="og:description" content="" /> -->
 		<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 		<!-- build:css styles/vendor.css -->
 		<!-- bower:css -->
@@ -16,6 +20,7 @@
 		<link rel="stylesheet" href="bower_components/leaflet-dist/leaflet.css" />
         <link rel="stylesheet" href="bower_components/angular-tablesort/tablesort.css" />
 		<link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css" />
+        <link rel="stylesheet" href="bower_components/angular-bootstrap-colorpicker/css/colorpicker.css" />
 		<!-- endbower -->
 		<!-- endbuild -->
 		<!-- build:css({.tmp,app}) styles/main.css -->
@@ -28,11 +33,14 @@
 		<![endif]-->
 
 		<div class="container-fluid" style="height: 100%;">
-		    <div class="row" style="padding: 20px 20px 20px 20px;height: 100%;">
-		        <div class="col-md-6" id="map" ng-controller="MapCtrl">
-		            <div id="map"><div id="map-inner-shadow"></div></div>
+		    <div class="row"> <!-- style="padding: 20px 20px 20px 20px;height: 100%;" -->
+		        <div class="col-md-5 container-fluid test" ng-controller="MapCtrl">
+                    <!-- <div class="container-fluid" style="height: 100%;"> -->
+                        <div id="map"><div id="map-inner-shadow"></div></div>
+                    <!-- </div> -->
+                    
 		        </div>
-		        <div class="col-md-6" id="data" ng-controller="NavigationCtrl">
+		        <div class="col-md-7"  ng-controller="NavigationCtrl">
 		            <nav class="navbar navbar-default">
 						<ul class="nav navbar-nav">
 							<li ng-class="navClass('home')"><a href='' ng-click="loadHome()">{{ 'TAB_HEADER_HOME' | translate }}</a></li>
@@ -43,13 +51,13 @@
                             <li ng-class="navClass('faq')"><a href='' ng-click="loadFaq()">{{ 'TAB_HEADER_FAQ' | translate }}</a></li>
 						</ul>
                         <ul class="nav navbar-nav navbar-right" style="padding-right: 15px;">
-                            <li class="dropdown">
+                            <!-- <li class="dropdown">
                               <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ 'TAB_HEADER_LANGUAGE' | translate }}<b class="caret"></b></a>
                               <ul class="dropdown-menu">
                                 <li ng-click="changeLanguage('de')"><a href="">De</a></li>
                                 <li ng-click="changeLanguage('en')"><a href="">En</a></li>
                               </ul>
-                            </li>
+                            </li> -->
 
                             
                             
@@ -71,6 +79,15 @@
 			 ga('create', 'UA-XXXXX-X');
 			 ga('send', 'pageview');
 		</script>
+
+        <div id="fb-root"></div>
+        <script>(function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=1403496949917646";
+          fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));</script>
 
 		<!--[if lt IE 9]>
 		<script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -101,6 +118,8 @@
         <script src="bower_components/multiselect/multiselect.js"></script>
         <script src="bower_components/underscore.string/dist/underscore.string.min.js"></script>
         <script src="bower_components/jassa/jassa.min.js"></script>
+        <script src="bower_components/angularjs-truncate/src/truncate.js"></script>
+        <script src="bower_components/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js"></script>
 		<!-- endbower -->
 		<!-- endbuild -->
 

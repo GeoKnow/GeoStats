@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.aksw.geostats.ShpToRdf;
+import org.aksw.geostats.Geostats;
 import org.apache.commons.lang3.StringUtils;
 
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein;
@@ -21,6 +21,7 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -40,7 +41,7 @@ public class RegionalStatistikLinker {
 		List<Resource> adminDistricts = getLayers(model, "http://dbpedia.org/ontology/AdministrativeDistrict");
 		List<Resource> districts	  = getLayers(model, "http://dbpedia.org/ontology/District");
 
-		CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream("/Users/gerb/Development/workspaces/java/geostats/data/regionalstatistik/bevoelkerungstand-173-01-4.csv"), "ISO-8859-1"), ';');
+		CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream("data/regionalstatistik/bevoelkerungstand-173-01-4.csv"), "ISO-8859-1"), ';');
 	    for ( String[] line : reader.readAll() ) {
 	    	
 	    	String id = line[0].trim();
@@ -67,6 +68,8 @@ public class RegionalStatistikLinker {
 	    		
 	    		for ( Resource r : federalStates ) {
 	    			
+	    			System.out.println(r);
+	    			
 	    			String resName = r.getProperty(RDFS.label).getString();
 	    			float match = levenshtein.getSimilarity(name, resName); 
 	    			if ( match >= bestMatch ) {
@@ -76,6 +79,7 @@ public class RegionalStatistikLinker {
 	    		}
 	    		
 	    		if ( id.equals("04") ) uri = "http://de.dbpedia.org/resource/Freie_Hansestadt_Bremen";
+	    		if ( id.equals("02") ) uri = "http://de.dbpedia.org/resource/Hamburg";
 	    		addTriple(model, uri, id, line[1].trim());
 	    	}
 	    	// administrative district
@@ -96,27 +100,38 @@ public class RegionalStatistikLinker {
 	    			}
 	    		}
 	    		
+//	    		System.out.println("RSL: " + line[1].trim() + " -- " + uri);
+	    		
+//	    		if      ( id.equals("040") ) addTriple(model, "http://de.dbpedia.org/resource/Freie_Hansestadt_Bremen", id, line[1].trim());
+//	    		else if ( id.equals("13004") ) addTriple(model, "http://de.dbpedia.org/resource/Schwerin", id, line[1].trim());
+	    		
 	    		addTriple(model, "http://de.dbpedia.org/resource/Freie_Hansestadt_Bremen", "040", line[1].trim());
 	    		addTriple(model, uri, id, line[1].trim());
 	    	}
 	    	// anything else
 	    	else if ( StringUtils.isNumeric(id) ) {
 	    	
-//	    		System.out.println(id + name);
-	    		
 	    		String dbpediaUri = "";
 	    		float bestMatch = 0F;
 	    		
 	    		for ( Resource r : districts ) {
 	    			
-	    			String resName = r.getProperty(RDFS.label).getString().replaceAll("\\(.+?\\)", "");
-	    			float match = levenshtein.getSimilarity(name, resName); 
-	    			if ( match >= bestMatch ) {
-	    				bestMatch = match;
-	    				dbpediaUri = r.getURI();
+	    			StmtIterator listProperties = r.listProperties(RDFS.label);
+	    			while (listProperties.hasNext()) {
+	    				
+	    				Statement next = listProperties.next();
+	    				if ( next.getLanguage().equals("de") ) {
+	    					
+	    					String resName = next.getObject().asLiteral().getLexicalForm().replaceAll("\\(.+?\\)", "");
+			    			float match = levenshtein.getSimilarity(name, resName); 
+			    			if ( match >= bestMatch ) {
+			    				bestMatch = match;
+			    				dbpediaUri = r.getURI();
+			    			}
+	    				}
 	    			}
 	    		}
-	    		if ( id.equals("10041") ) 	   addTriple(model, "http://de.dbpedia.org/resource/Regionalverband_Saarbrücken", id, line[1].trim());
+	    		if      ( id.equals("10041") ) addTriple(model, "http://de.dbpedia.org/resource/Regionalverband_Saarbrücken", id, line[1].trim());
 	    		else if ( id.equals("13004") ) addTriple(model, "http://de.dbpedia.org/resource/Schwerin", id, line[1].trim());
 	    		else if ( id.equals("13072") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Rostock", id, line[1].trim());
 	    		else if ( id.equals("09776") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Lindau_(Bodensee)", id, line[1].trim());
@@ -193,8 +208,20 @@ public class RegionalStatistikLinker {
 	    		else if ( id.equals("04012") ) addTriple(model, "http://de.dbpedia.org/resource/Bremerhaven", id, line[1].trim());
 	    		else if ( id.equals("1054") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Nordfriesland", id, line[1].trim());
 	    		else if ( id.equals("03454") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Emsland", id, line[1].trim());
-	    	
+	    		else if ( id.equals("1051") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Dithmarschen", id, line[1].trim());
+	    		else if ( id.equals("12062") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Elbe-Elster", id, line[1].trim());
+	    		else if ( id.equals("12063") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Havelland", id, line[1].trim());
+	    		else if ( id.equals("7131") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Ahrweiler", id, line[1].trim());
+	    		else if ( id.equals("08425") ) addTriple(model, "http://de.dbpedia.org/resource/Alb-Donau-Kreis", id, line[1].trim());
+	    		else if ( id.equals("09276") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Regen", id, line[1].trim());
+	    		else if ( id.equals("05766") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Lippe", id, line[1].trim());
+	    		else if ( id.equals("07233") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Vulkaneifel", id, line[1].trim());
+	    		else if ( id.equals("06431") ) addTriple(model, "http://de.dbpedia.org/resource/Kreis_Bergstraße", id, line[1].trim());
+	    		else if ( id.equals("09674") ) addTriple(model, "http://de.dbpedia.org/resource/Landkreis_Haßberge", id, line[1].trim());
+	    		
 	    		else {
+	    			
+//	    			System.out.println(dbpediaUri + " " + line[1].trim());
 	    			addTriple(model, dbpediaUri, id, line[1].trim());
 	    		}
 	    		
@@ -220,11 +247,12 @@ public class RegionalStatistikLinker {
 		Resource dbpedia  = ResourceFactory.createResource(dbpediaUri);
 		Resource regional = ResourceFactory.createResource("http://www.regionalstatistik.de/genesis/resource/" + id);
 		model.add(dbpedia, OWL.sameAs, regional);
+		model.add(regional, OWL.sameAs, dbpedia);
 		model.add(regional, RDFS.label, originalName);
 		
-		System.out.println("URI: " + dbpediaUri + " ---> " + id);
+//		System.out.println("URI: " + dbpediaUri + " ---> " + id);
 		
-		model.add(dbpedia, ResourceFactory.createProperty(ShpToRdf.GEOSTATS_NS, "regionalStatistikId"), id);
+		model.add(dbpedia, ResourceFactory.createProperty(Geostats.GEOSTATS_NS, "regionalStatistikId"), id);
 	}
 
 	private static List<Resource> getLayers(Model model, String type) {

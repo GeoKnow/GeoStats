@@ -169,34 +169,34 @@ public class RdfExport {
 		model.add(model.createResource(uri), ResourceFactory.createProperty("http://linkedgeodata.org/ld/gadm2/ontology/representedBy"), ResourceFactory.createResource(gadmUri));
 	}
 
-	/**
-	 * changes dg
-	 * 
-	 * @param string
-	 */
-	public static void insertResourceHierachie(Model model, String uri, Object admDistrict, Object state, Object country) {
-		
-		if ( admDistrict != null ) {
-			
-			String districtUri = UriResolver.getInstance().getUri(admDistrict.toString(), null);
-			UriResolver.getInstance().queryExtra(districtUri, "adminDistrict", model);
-			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/adminstrativeDistrict"), ResourceFactory.createResource(districtUri));
-		}
-		
-		if ( state != null ) {
-			
-			String stateUri = UriResolver.getInstance().getUri(state.toString(), null);
-			UriResolver.getInstance().queryExtra(stateUri, "state", model);
-			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/federalState"), ResourceFactory.createResource(stateUri));
-		}
-		
-		if ( country != null ) {
-			
-			String countryUri = UriResolver.getInstance().getUri(country.toString(), null);
-			UriResolver.getInstance().queryExtra(countryUri, "country", model);
-			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/country"), ResourceFactory.createResource(countryUri));
-		}
-	}
+//	/**
+//	 * changes dg
+//	 * 
+//	 * @param string
+//	 */
+//	public static void insertResourceHierachie(Model model, String uri, Object admDistrict, Object state, Object country) {
+//		
+//		if ( admDistrict != null ) {
+//			
+//			String districtUri = UriResolver.getInstance().getUri(admDistrict.toString(), null);
+//			UriResolver.getInstance().queryExtra(districtUri, "adminDistrict", model);
+//			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/adminstrativeDistrict"), ResourceFactory.createResource(districtUri));
+//		}
+//		
+//		if ( state != null ) {
+//			
+//			String stateUri = UriResolver.getInstance().getUri(state.toString(), null);
+//			UriResolver.getInstance().queryExtra(stateUri, "state", model);
+//			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/federalState"), ResourceFactory.createResource(stateUri));
+//		}
+//		
+//		if ( country != null ) {
+//			
+//			String countryUri = UriResolver.getInstance().getUri(country.toString(), null);
+//			UriResolver.getInstance().queryExtra(countryUri, "country", model);
+//			model.add(model.createResource(uri), ResourceFactory.createProperty("http://dbpedia.org/ontology/country"), ResourceFactory.createResource(countryUri));
+//		}
+//	}
 
 	//
 	/**

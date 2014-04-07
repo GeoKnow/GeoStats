@@ -16,10 +16,12 @@ import org.aksw.geostats.rdf.RdfExport;
 import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
 import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontendImpl;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 import org.aksw.jena_sparql_api.pagination.core.QueryExecutionFactoryPaginated;
 //import org.aksw.jena_sparql_api.retry.core.QueryExecutionFactoryRetry;
+
 
 
 
@@ -49,12 +51,12 @@ public class DataRetriever {
 			
 			lgd = new QueryExecutionFactoryHttp("http://linkedgeodata.org/vsparql");
 //			lgd = new QueryExecutionFactoryRetry(lgd, 3, 1000);
-			lgd = new QueryExecutionFactoryCacheEx(lgd, new CacheExImpl(CacheCoreH2.create("lgd", 150l * 60l * 60l * 1000l, false)));
+			lgd = new QueryExecutionFactoryCacheEx(lgd, new CacheFrontendImpl(CacheCoreH2.create("lgd", 150l * 60l * 60l * 1000l, false)));
 			lgd = new QueryExecutionFactoryPaginated(lgd, 500);
 			
 			localhost = new QueryExecutionFactoryHttp("http://localhost:8890/sparql");
 //			localhost = new QueryExecutionFactoryRetry(localhost, 3, 1000);
-			localhost = new QueryExecutionFactoryCacheEx(localhost, new CacheExImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false)));
+			localhost = new QueryExecutionFactoryCacheEx(localhost, new CacheFrontendImpl(CacheCoreH2.create("localhost", 150l * 60l * 60l * 1000l, false)));
 			localhost = new QueryExecutionFactoryPaginated(localhost, 500);
 		}
 		catch (ClassNotFoundException e) {

@@ -6,7 +6,7 @@ var currentEntityLayer;
 var entityLayer;
 
 angular.module('geostatsAngularApp')
-  .controller('MapCtrl', [ "$scope", function($scope) {
+  .controller('MapCtrl', [ "$scope", "$filter", function($scope, $filter) {
 
     entityLayer         = L.layerGroup();
     currentEntityLayer  = L.layerGroup();
@@ -19,17 +19,24 @@ angular.module('geostatsAngularApp')
     map = L.map('map', {
         center: [51.399206, 10.349121],
         zoom: 6,
-        maxZoom: 18,
-        minZoom: 1,
+        maxZoom: 6,
+        minZoom: 6,
         dragging : true,
         zoomControl : true,
+        scrollWheelZoom : false,
+        maxBounds : [[58.8609857506449, 0],[42.19752230305685, 20.81201171875]],
         layers: [tileLayer , currentEntityLayer, entityLayer]
     });
 
     entities = getEntityGeometries();
+    console.log(entities);
 
+    // _.each(_.values(entities['federalStates']), function (entity) { 
     _.each(_.values(entities['districts']), function (entity) { 
-        addPolygon(entity, "black", entityLayer); 
+
+    // _.each(_.values(entities['administrativeDistricts']), function (entity) { 
+
+        addPolygon(entity, "black", entityLayer, false);       
     });
 }]);
 
@@ -77,17 +84,42 @@ function addPolygon(entity, color, layer, clearLayer) {
     polygon.bindPopup(getPopupHtml(entity));
 }
 
-function getPopupHtml(entity) {
+function getPopupHtml(entity){
 
     var html =
+    "<div>" +
+        "<h1><a href='#entity/"+entity.uri+"'>" + entity.label + "</a></h1>" +
         "<div>" +
-            "<h1><a href='#entity/"+entity.uri+"'>" + entity.label + "</a></h1>" +
-            "<div>" +
-                "<img class='' style='float:left; padding-right: 10px;' width='50px' src='" +entity.img + "'/>" +
-                "<p>" + entity.comment + "</p>" +
-                "<div style='clear: both;'/>" +
-            "</div>" +    
-        "</div>";
+            "<img class='' style='float:left; padding-right: 10px;' width='50px' src='" +entity.img + "'/>" +
+            "<p>" + truncate(entity.comment, 200) + "</p>" +
+            "<div style='clear: both;'></div> \
+            <a href='#entity/"+entity.uri+"'> \
+                <button type='button' class='btn btn-default' id='start'>Expose</button> \
+            </a> \
+        </div> \
+    </div>";
 
     return html;
+}
+
+function truncate(input, chars, breakOnWord) {
+    if (isNaN(chars)) return input;
+    if (chars <= 0) return '';
+    if (input && input.length > chars) {
+        input = input.substring(0, chars);
+
+        if (!breakOnWord) {
+            var lastspace = input.lastIndexOf(' ');
+            //get last space
+            if (lastspace !== -1) {
+                input = input.substr(0, lastspace);
+            }
+        }else{
+            while(input.charAt(input.length-1) === ' '){
+                input = input.substr(0, input.length -1);
+            }
+        }
+        return input + '...';
+    }
+    return input;
 }

@@ -1,24 +1,39 @@
 <div class="container-fluid" style="overflow: auto; height: 100%;">
-    <table id="result-table" class="table table-striped res-table" ts-wrapper>
-        <thead>
-            <tr>
-                <th ts-criteria="image" style="width: 10%">Wappen</th>
-                <th ts-criteria="label|lowercase" style="width: 22%">Name</th>
-                <th ts-criteria="primary" style="width: 22%">{{primaryStatisticLabel}}</th>
-                <th ts-criteria="secondary" style="width: 22%">{{secondaryStatisticLabel}}</th>
-<!-- <th ts-criteria="combined| tablesortOrderBy:desc" ts-default style="width: 22%">Kombiniert</th> -->
-                <th ts-criteria="combined" ts-default style="width: 22%">Kombiniert</th>                
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="entity in entities" ts-repeat ng-mouseover="select(entity);">
-                <td><img style='width: 50px' src='{{ entity.img }}'/></td>
-                <!-- <td>IMAGE</td> -->
-                <td><a href='#entity/{{ entity.uri }}'>{{ entity.label }}</a></td>
-                <td>{{ entity.primary | number : 3 }}</td>
-                <td>{{ entity.secondary | number : 3 }}</td>
-                <td>{{ entity.combined | number : 3 }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container-fluid" style="margin-top: 20px;" ng-show="info">
+        <p>Es ist keine Statistik ausgewählt.</p>
+        <a href="#statistic">
+            <button style="margin-top: 25px;" type="button" class="btn btn-warning" id="start">Statistik auswählen</button>
+        </a>
+    </div>
+    <div ng-show="!info">
+        <a href="#statistic?i={{interval}}&c={{color}}&l={{layer}}&sep={{sparqlEndpoint}}&g={{graph}}&pdq={{primaryDataCube}}&pm={{primaryMeasure}}&sdq={{secondaryDataCube}}&sm={{secondaryMeasure}}&sml={{secondaryMeasureLabel}}&pml={{primaryMeasureLabel}}">
+        <button style="margin-top: 25px;" type="button" class="btn btn-warning" id="start">Suchanfrage editieren</button>
+        </a>
+        <div class="pull-right" style="padding-top: 30px;">
+                <div class="fb-share-button" data-href="http://geostats.aksw.org" data-type="button_count"></div>
+        </div>
+        <hr/>
+        <table id="result-table" class="table table-striped res-table" ts-wrapper>
+            <thead>
+                <tr>
+                    <th ts-criteria="image" style="width: 10%">Wappen</th>
+                    <th ng-show="interval != 'keine Gruppierung'" ts-criteria="secondary|parseFloat" style="width: 7%">Gruppe</th>
+                    <th ts-criteria="label|lowercase" style="width: 22%">Name</th>
+                    <th ts-criteria="primary|parseFloat" style="width: 22%">{{primaryStatisticLabel}}</th>
+                    <th ng-show="secondaryStatisticLabel" ts-criteria="secondary|parseFloat" style="width: 22%">{{secondaryStatisticLabel}}</th>
+                    <th ts-criteria="combined|parseFloat" ts-default="descending" style="width: 22%">Kombiniert</th>                
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="entity in entities" ts-repeat ng-mouseover="select(entity);">
+                    <td><img style='width: 50px' src='{{ entity.img }}'/></td>
+                    <td ng-show="interval != 'keine Gruppierung'" ts-criteria="secondary|parseInt" style="width: 5%">{{interval}}</td>
+                    <td><a href='#entity/{{ entity.id }}'>{{ entity.label }}</a></td>
+                    <td>{{ entity.primary }}</td>
+                    <td ng-show="secondaryStatisticLabel">{{ entity.secondary }}</td>
+                    <td>{{ entity.combined | number : 3 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

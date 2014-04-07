@@ -63,7 +63,7 @@ public class NutsLoader {// extends DefaultShapeFileLoader {
 	 * 
 	 * @return FeatureCollection with the collection of features filtered.
 	 */
-	public FeatureCollection getShapeFileFeatureCollection() {
+	public static FeatureCollection getShapeFileFeatureCollection() {
 
 		File file = new File(path);
 
@@ -78,7 +78,7 @@ public class NutsLoader {// extends DefaultShapeFileLoader {
 		if (map.size() > 0) {
 			try {
 				DataStore dataStore = DataStoreFinder.getDataStore(map);
-				FeatureSource featureSource = dataStore.getFeatureSource(this.fileName);
+				FeatureSource featureSource = dataStore.getFeatureSource(fileName);
 				
 				featureCollection = featureSource.getFeatures();
 
@@ -100,6 +100,7 @@ public class NutsLoader {// extends DefaultShapeFileLoader {
 
 		Model nutsModel = FileManager.get().loadModel("data/nuts/nuts-rdf-0.91.ttl");
 		nutsModel.add(model);
+		getShapeFileFeatureCollection();
 		FeatureIterator iterator = featureCollection.features();
 
 		try {

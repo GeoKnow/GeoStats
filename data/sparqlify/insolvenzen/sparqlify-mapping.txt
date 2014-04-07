@@ -22,7 +22,7 @@ Create View Template Insolvenzen
   
     gs-qb:GeoStatsInsolvenzen a qb:DataSet ;
         qb:structure gs-qb:GeoStatsInsolvenzenStructure ;
-        rdfs:label "Insolvenzen@de"@de ;
+        rdfs:label "Insolvenzen"@de ;
         dct:publisher <http://semanticweb.org/id/AKSW> ;
         dct:issued "2014-03-02"^^xsd:date ;
         dct:subject sdmx-subject:3.2 ;
@@ -139,7 +139,7 @@ Create View Template Insolvenzen
       gs-qb:vorraussichtlicheForderungen ?forderungen . 
   }
   With
-      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/", ?1, "_", ?2))
+      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/insolvency/", ?1, "_", ?2))
       ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?2))
       ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?1))
       ?beantragt = plainLiteral(?4)

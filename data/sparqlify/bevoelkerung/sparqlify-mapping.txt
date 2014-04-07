@@ -22,7 +22,7 @@ Create View Template Bevoelkerung
   
     gs-qb:GeoStatsBevoelkerung a qb:DataSet ;
         qb:structure gs-qb:GeoStatsBevoelkerungStructure ;
-        rdfs:label "Bevoelkerung"@de ;
+        rdfs:label "Bevölkerung"@de ;
         dct:publisher <http://semanticweb.org/id/AKSW> ;
         dct:issued "2014-02-11"^^xsd:date ;
         dct:subject sdmx-subject:3.2 .
@@ -68,7 +68,7 @@ Create View Template Bevoelkerung
     # -- Dimensions and measures  ----------------------------
 
         gs-qb:refPeriod  a rdf:Property, qb:DimensionProperty;
-            rdfs:label "time period"@en;
+            rdfs:label "Period"@en;
             rdfs:label "Zeitraum"@de;
             rdfs:subPropertyOf sdmx-dimension:refPeriod;
             rdfs:range interval:Interval;
@@ -76,22 +76,26 @@ Create View Template Bevoelkerung
             
         gs-qb:refArea  a rdf:Property, qb:DimensionProperty;
             rdfs:label "Ort"@de;
+            rdfs:label "Place"@en;
             rdfs:subPropertyOf sdmx-dimension:refArea;
             rdfs:range admingeo:UnitaryAuthority;
             qb:concept sdmx-concept:refArea .
             
         gs-qb:bevoelkerungInsgesamt  a rdf:Property, qb:MeasureProperty;
             rdfs:label "Bevölkerung Insgesamt"@de;
+            rdfs:label "Population Total"@en;
             rdfs:subPropertyOf sdmx-measure:obsValue;
             rdfs:range xsd:int .
             
         gs-qb:bevoelkerungMaennlich  a rdf:Property, qb:MeasureProperty;
             rdfs:label "Bevölkerung Männlich"@de;
+            rdfs:label "Population Female"@en;
             rdfs:subPropertyOf sdmx-measure:obsValue;
             rdfs:range xsd:int .
             
         gs-qb:bevoelkerungWeiblich  a rdf:Property, qb:MeasureProperty;
             rdfs:label "Bevölkerung Weiblich"@de;
+            rdfs:label "Population Female"@en;
             rdfs:subPropertyOf sdmx-measure:obsValue;
             rdfs:range xsd:int .
             
@@ -107,7 +111,7 @@ Create View Template Bevoelkerung
           gs-qb:bevoelkerungWeiblich ?weiblich ;
   }
   With
-      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/", ?3, "_", ?1))
+      ?observationUri = uri(concat("http://geostats.aksw.org/qb/observation/population/", ?3, "_", ?1))
       ?areaUri = uri(concat("http://www.regionalstatistik.de/genesis/resource/", ?1))
       ?refPeriod = uri(concat("http://dbpedia.org/resource/", ?3))
       ?insgesamt = plainLiteral(?4)

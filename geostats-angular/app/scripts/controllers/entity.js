@@ -21,15 +21,16 @@ angular.module('geostatsAngularApp')
 
             addPolygon(entity, "red", getCurrentEntityLayer(), true);
 
-            var sparqlService = new Jassa.service.SparqlServiceHttp('http://dbpedia.org/sparql');
-            // var sparqlService = new Jassa.service.SparqlServiceHttp('http://geostats-angular/sparql');
+            // var sparqlService = new Jassa.service.SparqlServiceHttp('http://dbpedia.org/sparql');
+            var sparqlService = new Jassa.service.SparqlServiceHttp('http://geostats-angular/sparql');
 
             sparqlService = new Jassa.service.SparqlServiceCache(sparqlService);
             sparqlService = new Jassa.service.SparqlServicePaginate(sparqlService, 1000);
 
             var store = new Jassa.sponate.StoreFacade(sparqlService, {
                 dbo: "http://dbpedia.org/ontology/", 
-                foaf: "http://xmlns.com/foaf/0.1/"
+                foaf: "http://xmlns.com/foaf/0.1/",
+                geostats:  "http://geostats.aksw.org/"
             });
 
             store.addMap({
@@ -41,27 +42,39 @@ angular.module('geostatsAngularApp')
                     abstract         : "?abstract",
                     area             : "?area",
                     population       : "?population",
+                    vehicleCode      : "?vehicleCode",
                     leader           : "?leader",
                     leaderThumbnail  : "?leaderThumbnail",
+                    leaderLabel      : "?leaderLabel",
                     birthDate        : "?birthDate",
-                    birthPlace       : "?birthPlace",
+                    birthPlace       : "?bp",
+                    birthPlaceLabel  : "?bpl",
                     party            : "?party",
-                    partyThumbnail   : "?partyThumbnail",
-                    elevation        : "?elevation"
+                    pt               : "?pt",
+                    partyLabel       : "?partyLabel",
+                    elevation        : "?elevation",
+                    destatisID       : "?destatisID",
+                    nuts             : "?nuts"
                 }],
                 from : "OPTIONAL { ?s dbo:thumbnail ?thumbnail . } \
                         OPTIONAL { ?s dbo:abstract ?abstract . FILTER( lang(?abstract) = '"+$translate.preferredLanguage()+"')} \
                         OPTIONAL { ?s dbo:populationTotal ?population . } \
                         OPTIONAL { ?s dbo:areaTotal ?area . } \
+                        OPTIONAL { ?s dbo:vehicleCode ?vehicleCode  . } \
                         OPTIONAL { ?s dbo:elevation ?elevation . } \
+                        OPTIONAL { ?nuts owl:sameAs ?s . FILTER( regex(?nuts, '^http://nuts.geovocab.org/id/', 'i')) } \
+                        OPTIONAL { ?s geostats:regionalStatistikId ?destatisID . } \
                         OPTIONAL { \
                             ?s dbo:leader ?leader .  \
+                            FILTER(regex(str(?s), '^http://de.dbpedia.org/resource/', 'i')) . \
+                            ?leader rdfs:label ?leaderLabel . FILTER( lang(?leaderLabel) = '"+$translate.preferredLanguage()+"') \
                             OPTIONAL { ?leader dbo:thumbnail ?leaderThumbnail . } \
                             OPTIONAL { ?leader dbo:birthDate ?birthDate . } \
-                            OPTIONAL { ?leader dbo:birthPlace ?birthPlace . } \
+                            OPTIONAL { ?leader dbo:birthPlace ?bp . ?bp rdfs:label ?bpl . FILTER( LANGMATCHES(lang(?bpl), '"+$translate.preferredLanguage()+"')) } \
                             OPTIONAL { \
                                 ?leader dbo:party ?party . \
-                                OPTIONAL { ?leader dbo:thumbnail ?partyThumbnail } . \
+                                OPTIONAL { ?party rdfs:label ?partyLabel .  FILTER( LANGMATCHES(LANG(?partyLabel), 'de')) } . \
+                                OPTIONAL { ?party dbo:thumbnail ?pt } . \
                             }  \
                         } \
                         OPTIONAL { ?s foaf:homepage ?homepage . } "
@@ -85,7 +98,7 @@ angular.module('geostatsAngularApp')
 
             // var concept = new Jassa.facete.Concept(Jassa.sparql.ElementString.create("?s a <http://dbpedia.org/ontology/Place> ."), Jassa.rdf.NodeFactory.createVar("s"));
             // var promise = store.entity.find().concept(concept).limit(10).asList();
-            var entityConcept = new Jassa.facete.Concept(Jassa.sparql.ElementString.create("?s ?p ?o . FILTER ( ?s = <" + $routeParams.uri.replace("http://de.", "http://") + "> )"), Jassa.rdf.NodeFactory.createVar("s"));
+            var entityConcept = new Jassa.facete.Concept(Jassa.sparql.ElementString.create("?s ?p ?o . FILTER ( ?s = <" + $routeParams.uri/*.replace("http://de.", "http://")*/ + "> )"), Jassa.rdf.NodeFactory.createVar("s"));
             var promise1 = store.entity.find().concept(entityConcept).asList();
             var promise2 = store.labels.find().concept(entityConcept).asList();
             var promise = $.when.apply(window, [promise1, promise2]);
@@ -95,38 +108,38 @@ angular.module('geostatsAngularApp')
 
                 var entity = docs[0];
 
+                console.log(entity);
+
                 $scope.entity = {
                     uri : entity.id.slice(1,-1),
-                    homepage : entity.homepage.slice(1,-1),
-                    image : entity.thumbnail.slice(1,-1),
-                    label : {
-                        de : labels[0].displayLabel,
-                        en : labels[0].displayLabel
-                    },
-                    abstract : {
-                        de : entity.abstract,
-                        en : entity.abstract
-                    },
-                    area : entity.area ? entity.area + " km²" : $translate('NOT_AVAILABLE').then(function (translation) { $scope.entity.area = translation; }),
+                    wikipedia : entity.id.slice(1,-1).replace("http://de.dbpedia.org/resource/", "http://de.wikipedia.org/wiki/"),
+                    homepage : entity.homepage ? entity.homepage.slice(1,-1) : "Keine Angabe",
+                    image : entity.thumbnail ? entity.thumbnail.slice(1,-1) : "http://fribi.de/img/uploads/groups/782836_1288967599.jpg",
+                    label : entity.label,
+                    abstract : entity.abstract,
+                    vehicleCode : entity.vehicleCode ? entity.vehicleCode : $translate('NOT_AVAILABLE').then(function (translation) { $scope.entity.vehicleCode = translation; }),
+                    area : entity.area ? entity.area / 1000000 + " km²" : $translate('NOT_AVAILABLE').then(function (translation) { $scope.entity.area = translation; }),
                     population : entity.population ? entity.population : $translate('NOT_AVAILABLE').then(function (translation) { $scope.entity.population = translation; }),
                     elevation : entity.elevation ? entity.elevation + " m" : $translate('NOT_AVAILABLE').then(function (translation) { $scope.entity.elevation = translation; }),
                     leader : {
-                        uri : entity.leader.slice(1,-1),
-                        image : entity.leaderThumbnail.slice(1,-1),
+                        uri : entity.leader ? entity.leader.slice(1,-1) : "",
+                        image : entity.leaderThumbnail ? entity.leaderThumbnail.slice(1,-1) : "",
                         birthDate : entity.birthDate,
-                        birthPlace : entity.birthPlace,
-                        label : {
-                            de : "Klaus Wowereit",
-                            en : "Klaus Wowereit"
+                        birthPlace : {
+                            uri : entity.birthPlace ? entity.birthPlace.slice(1,-1) : "",
+                            label : entity.birthPlaceLabel ? entity.birthPlaceLabel : ""
                         },
+                        label : entity.leaderLabel,
                         party : {
                             uri : entity.party,
-                            label : {
-                                de : "SPD",
-                                en : "SPD"
-                            },
-                            image : entity.party.thumbnail.slice(1,-1)
+                            label : entity.partyLabel,
+                            image : entity.pt ? entity.pt.slice(1,-1) : ""
                         }
+                    },
+                    destatisID : entity.destatisID,
+                    nuts : {
+                        uri : entity.nuts ? entity.nuts.slice(1,-1) : "",
+                        label : entity.nuts ? entity.nuts.slice(1,-1).replace("http://nuts.geovocab.org/id/", "") : ""
                     }
                 };
 

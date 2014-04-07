@@ -15,6 +15,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.OWL;
 
@@ -46,7 +47,10 @@ public class NutsDBpediaLinker {
 		QueryExecution qe = QueryExecutionFactory.create(sparql, this.model);
 		ResultSet rs = qe.execSelect();
 		
+		int i = 1;
 		while(rs.hasNext()) {
+			
+			System.out.println("Linking district: " + i++);
 			
 			QuerySolution qs = rs.next();
 			String nutsDistrictUri		= qs.get("district").asResource().getURI();
@@ -132,14 +136,28 @@ public class NutsDBpediaLinker {
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE13A") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Waldshut";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEF07") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Nordfriesland";
 			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE949") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Emsland";
-						
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEF05") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Dithmarschen";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE407") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Elbe-Elster";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE408") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Havelland";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEB12") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Ahrweiler";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE145") ) dbpediaUri = "http://de.dbpedia.org/resource/Alb-Donau-Kreis";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEA45") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Lippe";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE715") ) dbpediaUri = "http://de.dbpedia.org/resource/Kreis_Bergstraße";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DEB24") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Vulkaneifel";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE229") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Regen";
+			if ( nutsDistrictUri.equals("http://nuts.geovocab.org/id/DE267") ) dbpediaUri = "http://de.dbpedia.org/resource/Landkreis_Haßberge";
+			
 			nutsUriToDbpediaUri.put(nutsDistrictUri, dbpediaUri);
 		}
 		qe.close();
 		for ( Map.Entry<String, String> entry : nutsUriToDbpediaUri.entrySet() ) {
 			
 			UriResolver.getInstance().queryExtra(entry.getValue(), "district", model);
+			
+//			NodeIterator listObjectsOfProperty = model.listObjectsOfProperty(OWL.sameAs);
+//			while (listObjectsOfProperty.hasNext()) System.out.println(listObjectsOfProperty.next().asResource().getURI());
 			model.add(ResourceFactory.createResource(entry.getKey()), OWL.sameAs, ResourceFactory.createResource(entry.getValue()));
+			model.add(ResourceFactory.createResource(entry.getValue()), OWL.sameAs, ResourceFactory.createResource(entry.getKey()));
 		}
 	}
 	

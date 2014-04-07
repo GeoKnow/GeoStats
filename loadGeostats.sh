@@ -1,0 +1,8 @@
+isql 1111 dba dba "EXEC=SPARQL CLEAR GRAPH <http://geostats.aksw.org>"
+isql 1111 dba dba "EXEC=SPARQL CREATE SILENT GRAPH 'http://geostats.aksw.org'"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/geostats.ttl'), '', 'http://geostats.aksw.org', 255)"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/osm.ttl'), '', 'http://geostats.aksw.org', 255)"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/sparqlify/bevoelkerung/bevoelkerung-kreisebene-173-01-4.ttl'), '', 'http://geostats.aksw.org', 255)"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/sparqlify/insolvenzen/insolvenzen-kreisebene-325-31-4.ttl'), '', 'http://geostats.aksw.org', 255)"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/sparqlify/sozialhilfe/sozialhilfe-kreisebene-331-51-4.ttl'), '', 'http://geostats.aksw.org', 255)"
+isql 1111 dba dba "EXEC=TTLP_MT(file_to_string_output('/Users/gerb/Development/workspaces/mi/geostats/data/sparqlify/schulden-kernhaushalte/schulden-kernhaushalte-358-71-4.ttl'), '', 'http://geostats.aksw.org', 255)"

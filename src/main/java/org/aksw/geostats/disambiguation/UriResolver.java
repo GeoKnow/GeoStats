@@ -3,17 +3,21 @@
  */
 package org.aksw.geostats.disambiguation;
 
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aksw.geostats.rdf.RdfExport;
 import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheCoreEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
 import org.aksw.jena_sparql_api.cache.extra.CacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontendImpl;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
+import org.aksw.jena_sparql_api.retry.core.QueryExecutionFactoryRetry;
 
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
@@ -21,8 +25,11 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
@@ -34,9 +41,9 @@ public class UriResolver {
 
 	private static UriResolver INSTANCE = null;
 	private static QueryExecutionFactory deQef = new QueryExecutionFactoryHttp("http://de.dbpedia.org/sparql");
-	private static QueryExecutionFactory enQef = new QueryExecutionFactoryHttp("http://de.dbpedia.org/sparql");
-	private CacheEx enCacheFrontend = null;
-	private CacheEx deCacheFrontend = null;
+	private static QueryExecutionFactory enQef = new QueryExecutionFactoryHttp("http://lod.openlinksw.com/sparql");
+	private CacheFrontend enCacheFrontend = null;
+	private CacheFrontend deCacheFrontend = null;
 	Map<String,String> oldToNew = new HashMap<>();
 	
 	
@@ -142,10 +149,12 @@ public class UriResolver {
 		
 		try {
 			
-			this.enCacheFrontend = new CacheExImpl(CacheCoreH2.create("en-dbpedia", 150l * 60l * 60l * 1000l, false));
-			this.deCacheFrontend = new CacheExImpl(CacheCoreH2.create("de-dbpedia", 150l * 60l * 60l * 1000l, false));
+			this.enCacheFrontend = new CacheFrontendImpl(CacheCoreH2.create("en-dbpedia", 150l * 60l * 60l * 1000l, false));
+			this.deCacheFrontend = new CacheFrontendImpl(CacheCoreH2.create("de-dbpedia", 150l * 60l * 60l * 1000l, false));
 			enQef = new QueryExecutionFactoryCacheEx(enQef, enCacheFrontend);
+			enQef = new QueryExecutionFactoryRetry(enQef, 5, 3000);
 			deQef = new QueryExecutionFactoryCacheEx(deQef, deCacheFrontend);
+			deQef = new QueryExecutionFactoryRetry(deQef, 5, 3000);
 		}
 		catch (ClassNotFoundException e) {
 			
@@ -216,7 +225,11 @@ public class UriResolver {
         return "";
 	}
 	
-	public void queryExtra(String uri, String type, Model model){
+	public void queryExtra(String uri, String type, Model globalModel){
+		
+		Model model = ModelFactory.createDefaultModel();
+		
+		System.out.println(uri);
 		
 		switch ( type ) {
 		
@@ -247,161 +260,66 @@ public class UriResolver {
 				model.add(countryUri, ResourceFactory.createProperty("http://dbpedia.org/ontology/currency"), ResourceFactory.createResource("http://dbpedia.org/resource/Euro"));
 				model.add(ResourceFactory.createResource("http://dbpedia.org/resource/Euro"), RDFS.label, "Euro", "de");
 				model.add(ResourceFactory.createResource("http://dbpedia.org/resource/Euro"), RDFS.label, "Euro", "en");
+				globalModel.add(model);
 				
 				break;
 			}
 			case "state": {
 				
 				Resource stateUri = ResourceFactory.createResource(uri);
+				addTypes(stateUri, model, "PopulatedPlace", "FederalState", "Place");
 				
-				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/PopulatedPlace"));
-				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/FederalState"));
-				model.add(stateUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Place"));
+				model.add(deQef.createQueryExecution(getQuery1(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery11(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery2(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery3(uri,uri)).execConstruct());
 				
-				String query = 
-						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
-						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
-						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
-						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
-						"CONSTRUCT { \n" +
-							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
-							"\t<" + uri + "> rdfs:comment ?comment . \n" +
-							"\t<" + uri + "> rdfs:label ?label . \n" +
-							"\t<" + uri + "> owl:sameAs ?sameAs . \n" +
-							"\t<" + uri + "> dbo:populationTotal ?population . \n" + 
-							"\t<" + uri + "> foaf:homepage ?homepage . \n" + 
-						"} \n" +
-						"WHERE { \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:comment ?comment } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:label ?label } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
-							"\tOPTIONAL { <" + uri + "> owl:sameAs ?sameAs . FILTER (regex(?sameAs, '^http://dbpedia.org/resource/', 'i')) } \n" +
-							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
-						"}";
-				
-				model.add(deQef.createQueryExecution(query).execConstruct());
+				RdfExport.write(model, "data/tmp/"+URLEncoder.encode(uri.replace("http://de.dbpedia.org/resource/", ""))+".ttl");
+				globalModel.add(model);
 				
 				break;
 			}
 			case "adminDistrict" : {
 				
 				Resource adminDistrictUri = ResourceFactory.createResource(uri);
+				addTypes(adminDistrictUri, model, "PopulatedPlace", "AdministrativeDistrict", "Place", "Settlement");
+				model.add(deQef.createQueryExecution(getQuery1(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery11(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery2(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery3(uri,uri)).execConstruct());
 				
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/PopulatedPlace"));
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Settlement"));
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Place"));
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/AdministrativeDistrict"));
-				
-				String query = 
-						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
-						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
-						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
-						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
-						"CONSTRUCT { \n" +
-							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
-							"\t<" + uri + "> rdfs:comment ?comment . \n" +
-							"\t<" + uri + "> rdfs:label ?label . \n" +
-							"\t<" + uri + "> owl:sameAs ?sameAs . \n" +
-							"\t<" + uri + "> dbo:areaCode ?areaCode . \n" + 
-							"\t<" + uri + "> dbo:areaTotal ?areaTotal . \n" + 
-							"\t<" + uri + "> dbo:elevation ?elevation . \n" + 
-							"\t<" + uri + "> dbo:leaderName ?leaderName . \n" + 
-							"\t?leaderName rdfs:label ?name . \n" + 
-							"\t?leaderName dbo:birthDate ?date . \n" + 
-							"\t?leaderName dbo:birthPlace ?place . \n" + 
-							"\t?leaderName dbo:abstract ?abstract . \n" + 
-							"\t<" + uri + "> dbo:leaderParty ?leaderParty . \n" + 
-							"\t?leaderParty rdfs:label ?party . \n" + 
-							"\t<" + uri + "> dbo:municipalityCode ?municipalityCode . \n" + 
-							"\t<" + uri + "> dbo:postalCode ?postalCode . \n" + 
-							"\t<" + uri + "> dbo:vehicleCode ?vehicleCode . \n" + 
-							"\t<" + uri + "> dbo:populationTotal ?population . \n" +
-							"\t<" + uri + "> foaf:homepage ?homepage . \n" +
-						"} \n" +
-						"WHERE { \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:comment ?comment } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:label ?label } \n" +
-							"\tOPTIONAL { <" + uri + "> owl:sameAs ?sameAs . FILTER (regex(?sameAs, '^http://dbpedia.org/resource/', 'i')) } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:areaCode ?areaCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:areaTotal ?areaTotal } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:elevation ?elevation } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:leaderName ?leaderName } \n" +
-							"\tOPTIONAL { ?leaderName rdfs:label ?name } \n" +
-							"\tOPTIONAL { ?leaderName dbo:birthDate ?date } \n" +
-							"\tOPTIONAL { ?leaderName dbo:birthPlace ?place } \n" +
-							"\tOPTIONAL { ?leaderName dbo:abstract ?abstract } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:leaderParty ?leaderParty } \n" +
-							"\tOPTIONAL { ?leaderParty rdfs:label ?party } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:municipalityCode ?municipalityCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:postalCode ?postalCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:vehicleCode ?vehicleCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
-							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
-						"}";
-				
-				model.add(deQef.createQueryExecution(query).execConstruct());
+				RdfExport.write(model, "data/tmp/"+URLEncoder.encode(uri.replace("http://de.dbpedia.org/resource/", ""))+".ttl");
+				globalModel.add(model);
 				
 				break;
 			}
 			case "district" : {
 				
-				Resource adminDistrictUri = ResourceFactory.createResource(uri);
+				Resource districtUri = ResourceFactory.createResource(uri);
+				addTypes(districtUri, model, "PopulatedPlace", "District", "Place");
 				
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/PopulatedPlace"));
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/District"));
-				model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/Place"));
+				model.add(deQef.createQueryExecution(getQuery1(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery11(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery2(uri,uri)).execConstruct());
+				model.add(deQef.createQueryExecution(getQuery3(uri,uri)).execConstruct());
 				
-				String query = 
-						"PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
-						"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
-						"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
-						"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
-						"CONSTRUCT { \n" +
-							"\t<" + uri + "> dbo:thumbnail ?thumbnail . \n" + 
-							"\t<" + uri + "> rdfs:comment ?comment . \n" +
-							"\t<" + uri + "> rdfs:label ?label . \n" +
-							"\t<" + uri + "> owl:sameAs ?sameAs . \n" +
-							"\t<" + uri + "> dbo:areaCode ?areaCode . \n" + 
-							"\t<" + uri + "> dbo:areaTotal ?areaTotal . \n" + 
-							"\t<" + uri + "> dbo:elevation ?elevation . \n" + 
-							"\t<" + uri + "> dbo:leaderName ?leaderName . \n" + 
-							"\t?leaderName rdfs:label ?name . \n" + 
-							"\t?leaderName dbo:birthDate ?date . \n" + 
-							"\t?leaderName dbo:birthPlace ?place . \n" + 
-							"\t?leaderName dbo:abstract ?abstract . \n" + 
-							"\t<" + uri + "> dbo:leaderParty ?leaderParty . \n" + 
-							"\t?leaderParty rdfs:label ?party . \n" + 
-							"\t<" + uri + "> dbo:municipalityCode ?municipalityCode . \n" + 
-							"\t<" + uri + "> dbo:postalCode ?postalCode . \n" + 
-							"\t<" + uri + "> dbo:vehicleCode ?vehicleCode . \n" + 
-							"\t<" + uri + "> dbo:populationTotal ?population . \n" +
-							"\t<" + uri + "> foaf:homepage ?homepage . \n" +
-						"} \n" +
-						"WHERE { \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:thumbnail ?thumbnail } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:comment ?comment } \n" +
-							"\tOPTIONAL { <" + uri + "> rdfs:label ?label } \n" +
-							"\tOPTIONAL { <" + uri + "> owl:sameAs ?sameAs . FILTER (regex(?sameAs, '^http://dbpedia.org/resource/', 'i')) } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:areaCode ?areaCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:areaTotal ?areaTotal } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:elevation ?elevation } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:leaderName ?leaderName } \n" +
-							"\tOPTIONAL { ?leaderName rdfs:label ?name } \n" +
-							"\tOPTIONAL { ?leaderName dbo:birthDate ?date } \n" +
-							"\tOPTIONAL { ?leaderName dbo:birthPlace ?place } \n" +
-							"\tOPTIONAL { ?leaderName dbo:abstract ?abstract } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:leaderParty ?leaderParty } \n" +
-							"\tOPTIONAL { ?leaderParty rdfs:label ?party } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:municipalityCode ?municipalityCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:postalCode ?postalCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:vehicleCode ?vehicleCode } \n" +
-							"\tOPTIONAL { <" + uri + "> dbo:populationTotal ?population } \n" +
-							"\tOPTIONAL { <" + uri + "> foaf:homepage ?homepage } \n" +
-						"}";
+				if ( uri.equals("http://de.dbpedia.org/resource/Städteregion_Aachen") ) 
+					model.add(ResourceFactory.createResource(uri), OWL.sameAs, ResourceFactory.createResource("http://dbpedia.org/resource/Aachen_(district)"));
 				
-				model.add(deQef.createQueryExecution(query).execConstruct());
+				NodeIterator listObjectsOfProperty = model.listObjectsOfProperty(OWL.sameAs);
+				while (listObjectsOfProperty.hasNext()) {
+					
+					String enUri = listObjectsOfProperty.next().asResource().getURI();
+					String deUri = districtUri.getURI();
+					model.add(enQef.createQueryExecution(getQuery1(deUri, enUri)).execConstruct());
+					model.add(enQef.createQueryExecution(getQuery11(deUri, enUri)).execConstruct());
+					model.add(enQef.createQueryExecution(getQuery2(deUri, enUri)).execConstruct());
+					model.add(enQef.createQueryExecution(getQuery3(deUri, enUri)).execConstruct());
+				}
+				
+				RdfExport.write(model, "data/tmp/"+URLEncoder.encode(uri.replace("http://de.dbpedia.org/resource/", ""))+".ttl");
+						
+				globalModel.add(model);
 				
 				break;
 			}
@@ -409,15 +327,148 @@ public class UriResolver {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param adminDistrictUri
+	 * @param model
+	 * @param types
+	 */
+	private void addTypes(Resource adminDistrictUri, Model model, String ... types) {
+		
+		for (String type : types) model.add(adminDistrictUri, RDF.type, ResourceFactory.createResource("http://dbpedia.org/ontology/"+type));
+	}
+
+	private String getQuery1(String newUri, String oldUri) {
+		return  "PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+				"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+				"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
+				"CONSTRUCT { \n" +
+					"\t<" + newUri + "> dbo:thumbnail ?thumbnail . \n" + 
+//					"\t<" + newUri + "> rdfs:comment ?comment . \n" +
+					"\t<" + newUri + "> dbo:abstract  ?abstract . \n" +
+					"\t<" + newUri + "> rdfs:label ?label . \n" +
+					"\t<" + newUri + "> owl:sameAs ?sameAs . \n" +
+//					"\t<" + newUri + "> dbo:areaCode ?areaCode . \n" + 
+//					"\t<" + newUri + "> dbo:areaTotal ?areaTotal . \n" + 
+//					"\t<" + newUri + "> dbo:elevation ?elevation . \n" +
+//					"\t<" + newUri + "> dbo:municipalityCode ?municipalityCode . \n" + 
+//					"\t<" + newUri + "> dbo:postalCode ?postalCode . \n" + 
+//					"\t<" + newUri + "> dbo:vehicleCode ?vehicleCode . \n" + 
+//					"\t<" + newUri + "> dbo:populationTotal ?population . \n" +
+//					"\t<" + newUri + "> foaf:homepage ?homepage . \n" +
+//					"\t<" + newUri + "> dbo:capital ?capital . \n" +
+//					"\t<" + newUri + "> rdfs:label ?capitalLabel . \n" +
+				"} \n" +
+				"WHERE { \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:thumbnail ?thumbnail  } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> rdfs:comment ?comment . FILTER(LANGMATCHES(lang(?comment), 'de') || LANG(?comment) = '') } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:abstract ?abstract . FILTER(LANGMATCHES(lang(?abstract), 'de') || LANG(?abstract) = '')}  \n" +
+					"\tOPTIONAL { <" + oldUri + "> rdfs:label ?label . FILTER(LANGMATCHES(lang(?label), 'de')  || LANG(?label) = '')  } \n" +
+					"\tOPTIONAL { <" + oldUri + "> owl:sameAs ?sameAs . FILTER (regex(?sameAs, '^http://dbpedia.org/resource/', 'i')) } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:areaCode ?areaCode } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:areaTotal ?areaTotal } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:elevation ?elevation } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:municipalityCode ?municipalityCode } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:postalCode ?postalCode } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:vehicleCode ?vehicleCode } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:populationTotal ?population } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> foaf:homepage ?homepage } \n" +
+//					"\tOPTIONAL { <" + oldUri + "> dbo:capital ?capital . ?capital rdfs:label ?capitalLabel . FILTER(LANGMATCHES(lang(?capitalLabel), 'de') || LANG(?capitalLabel) = '') } \n" +
+				"}";
+	}
+	
+	private String getQuery11(String newUri, String oldUri) {
+		return  "PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+				"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+				"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
+				"CONSTRUCT { \n" +
+					"\t<" + newUri + "> dbo:areaCode ?areaCode . \n" + 
+					"\t<" + newUri + "> dbo:areaTotal ?areaTotal . \n" + 
+					"\t<" + newUri + "> dbo:elevation ?elevation . \n" +
+					"\t<" + newUri + "> dbo:municipalityCode ?municipalityCode . \n" + 
+					"\t<" + newUri + "> dbo:postalCode ?postalCode . \n" + 
+					"\t<" + newUri + "> dbo:vehicleCode ?vehicleCode . \n" + 
+					"\t<" + newUri + "> dbo:populationTotal ?population . \n" +
+					"\t<" + newUri + "> foaf:homepage ?homepage . \n" +
+					"\t<" + newUri + "> dbo:capital ?capital . \n" +
+					"\t<" + newUri + "> rdfs:label ?capitalLabel . \n" +
+				"} \n" +
+				"WHERE { \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:areaCode ?areaCode } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:areaTotal ?areaTotal } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:elevation ?elevation } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:municipalityCode ?municipalityCode } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:postalCode ?postalCode } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:vehicleCode ?vehicleCode } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:populationTotal ?population } \n" +
+					"\tOPTIONAL { <" + oldUri + "> foaf:homepage ?homepage } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:capital ?capital . ?capital rdfs:label ?capitalLabel . FILTER(LANGMATCHES(lang(?capitalLabel), 'de') || LANG(?capitalLabel) = '') } \n" +
+				"}";
+	}
+	
+	private String getQuery2(String newUri, String oldUri) {
+		return  "PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+				"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+				"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
+				"CONSTRUCT { \n" +
+					"\t<" + newUri + "> dbo:leader ?leader . \n" +
+					"\t?leader a foaf:Person . \n" +
+					"\t?leader rdfs:label ?leaderLabel . \n" + 
+					"\t?leader dbo:birthDate ?date . \n" + 
+					"\t?leader dbo:birthPlace ?place . \n" + 
+					"\t?place rdfs:label ?placeLabel . \n" +
+					"\t?leader dbo:abstract ?abstract . \n" + 
+					"\t?leader dbo:thumbnail ?leaderThumb . \n" + 
+					"\t?leader dbo:party ?leaderParty . \n" + 
+					"\t?leaderParty rdfs:label ?partyLabel . \n" + 
+					"\t?leaderParty dbo:thumbnail ?partyThumb . \n" +
+				"} \n" +
+				"WHERE { \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader rdfs:label ?leaderLabel . } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:birthDate ?date } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:thumbnail ?leaderThumb } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:birthPlace ?place . ?place rdfs:label ?placeLabel FILTER(LANGMATCHES(lang(?placeLabel), 'de') || LANG(?placeLabel) = '') } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:abstract ?abstract } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:party ?leaderParty . ?leaderParty rdfs:label ?partyLabel . } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leader ?leader . ?leader dbo:party ?leaderParty . ?leaderParty dbo:thumbnail ?partyThumb } \n" +
+				"}";
+	}
+	
+	private String getQuery3(String newUri, String oldUri) {
+		return  "PREFIX dbo: <http://dbpedia.org/ontology/> \n" +
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+				"PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" +
+				"PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
+				"CONSTRUCT { \n" +
+					"\t<" + newUri + "> dbo:leader ?leader1 . \n" + 
+					"\t?leader1 a foaf:Person . \n" +
+					"\t?leader1 rdfs:label ?leaderLabel1 . \n" + 
+					"\t?leader1 dbo:birthDate ?date1 . \n" + 
+					"\t?leader1 dbo:birthPlace ?place1 . \n" + 
+					"\t?place1 rdfs:label ?placeLabel1 . \n" + 
+					"\t?leader1 dbo:abstract ?abstract1 . \n" + 
+					"\t?leader1 dbo:thumbnail ?leaderThumb . \n" +
+					"\t?leader1 dbo:party ?leaderParty1 . \n" + 
+					"\t?leaderParty1 rdfs:label ?partyLabel1 . \n" + 
+					"\t?leaderParty1 dbo:thumbnail ?partyThumb1 . \n" +
+				"} \n" +
+				"WHERE { \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 rdfs:label ?leaderLabel1 . } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:birthDate ?date1 } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:birthPlace ?place1 . ?place1 rdfs:label ?placeLabel1 FILTER(LANGMATCHES(lang(?placeLabel1), 'de') || LANG(?placeLabel1) = '')  } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:thumbnail ?leaderThumb } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:abstract ?abstract1 } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:party ?leaderParty1 . ?leaderParty1 rdfs:label ?partyLabel1 . } \n" +
+					"\tOPTIONAL { <" + oldUri + "> dbo:leaderName ?leader1 . ?leader1 dbo:party ?leaderParty1 . ?leaderParty1 dbo:thumbnail ?partyThumb1 } \n" +
+				"}";
+	}
+
 	private String repairLabel(String label) {
 		
 		if ( oldToNew.containsKey(label.replace("\n", "").replace("\r", "")) ) return oldToNew.get(label.replace("\n", "").replace("\r", ""));
 		else return label;
-	}
-
-	public static void main(String[] args) {
-		
-		String uri = UriResolver.getInstance().getUri("München", null);
-		System.out.println(uri);
 	}
 }
