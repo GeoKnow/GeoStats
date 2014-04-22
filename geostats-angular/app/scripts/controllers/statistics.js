@@ -3,7 +3,7 @@
 angular.module('geostatsAngularApp')
     .controller('StatisticsCtrl', ['$scope', '$routeParams', '$location', function ($scope, $routeParams, $location) {
     
-        $scope.sparqlEndpoint = $routeParams.spe ? $routeParams.spe : "http://geostats-angular/sparql" ;
+        $scope.sparqlEndpoint = $routeParams.spe ? $routeParams.spe : "http://139.18.2.142:8890/sparql" ;
         $scope.graph          = $routeParams.g ? $routeParams.g : "http://geostats.aksw.org";
         $scope.layers         = [{ id: 'federalStates', label : "Bundesländer" }, 
                                  { id: 'administrativeDistricts', label : "Regierungsbezirke" }, 
@@ -82,7 +82,7 @@ angular.module('geostatsAngularApp')
 
         $scope.getDataCubes = function() {
 
-            var sparqlService = new Jassa.service.SparqlServiceHttp('http://geostats-angular/sparql', ['http://geostats.aksw.org']);
+            var sparqlService = new Jassa.service.SparqlServiceHttp('http://139.18.2.142:8890/sparql', ['http://geostats.aksw.org']);
             sparqlService = new Jassa.service.SparqlServiceCache(sparqlService);
             sparqlService = new Jassa.service.SparqlServicePaginate(sparqlService, 1000);
 

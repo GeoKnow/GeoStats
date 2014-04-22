@@ -22,7 +22,7 @@ angular.module('geostatsAngularApp')
             addPolygon(entity, "red", getCurrentEntityLayer(), true);
 
             // var sparqlService = new Jassa.service.SparqlServiceHttp('http://dbpedia.org/sparql');
-            var sparqlService = new Jassa.service.SparqlServiceHttp('http://geostats-angular/sparql');
+            var sparqlService = new Jassa.service.SparqlServiceHttp('http://139.18.2.142:8890/sparql');
 
             sparqlService = new Jassa.service.SparqlServiceCache(sparqlService);
             sparqlService = new Jassa.service.SparqlServicePaginate(sparqlService, 1000);
